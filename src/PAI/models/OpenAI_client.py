@@ -10,17 +10,18 @@ class OpenAIClient:
         self.model = model
         self.client = OpenAI(api_key=self.api_key)
 
-    def generate(self, prompt: str, max_tokens: int = 1500, temperature: float = 0.7):
+    def generate(self, prompt: str, **kwargs):
         if not prompt.strip():
             raise ValueError("Prompt cannot be empty")
 
-        resp = self.client.chat.completions.create(
-            model=self.model,
-            messages=[
+        params ={
+            "model": self.model,
+            "messages": [
                 {"role": "system", "content": systemprompt.system_prompt},
                 {"role": "user", "content": prompt}
-                ],
-            max_tokens=max_tokens,
-            temperature=temperature
-        )
+                ]
+        }
+
+        params.update(kwargs)
+        resp = self.client.chat.completions.create(**params)
         return resp.choices[0].message.content.strip()

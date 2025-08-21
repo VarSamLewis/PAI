@@ -47,13 +47,37 @@ Use 'pai init <provider> --model <model>' to initialize a session
 ```
 
 ### To-Do
+
+#### Audit, secutriy, testing
+- [ ] Add audit trail
+- [ ] Add testing
+- [ ] Validation steps
+- [ ] Security Review
+- [ ] Safe mode (enhanced permissions, policy layer)
+
+#### Functionality 
 - [ ] Add more providers
 - [ ] Add tools and infrastructure for running them
-- [ ] Add build tool (poetry)
-- [ ] Add testing
-- [ ] Add logging
-- [ ] Add audit trail
+- [ ] Context management for LLMs
 - [ ] Add out of session commands
 
+#### Engineering Good Practice
+- [ ] Add build tool (poetry)
+- [ ] Add Github Actions for CI/CD
+- [ ] Review code
+
+
 ### Notes
-GPT-5 doesn't work yet as some of the parameters are different.
+Only supports OpenAI  
+Do all model providers have the capability to accept system prompts?
+
+### How to run
+
+Clone the repository
+
+You need the following: 
+	Python (I use 3.11 nut I think older versions should work as well)
+	typer
+	openai (alonmg with an active api key saved as an environment variable "OPENAI_API_KEY")
+
+It should be OS independennt but I've only tested on windows so far.

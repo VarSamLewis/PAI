@@ -2,7 +2,7 @@
 import typer
 import json
 import os
-from typing import Optional
+from typing import Optional, List
 from pathlib import Path
 from .PAI import PAI
 
@@ -56,7 +56,7 @@ def create_ai_from_config() -> PAI:
 def init(
     provider: str = typer.Argument(..., help="AI provider (openai, anthropic, etc.)"),
     model: str = typer.Option("gpt-4o-mini", "--model", "-m", help="Model to use"),
-    api_key: Optional[str] = typer.Option(None, "--api-key", help="API key (overrides environment variable)")
+    api_key: Optional[str] = typer.Option(None, "--api-key", help="API key (overrides environment variable)"),
 ):
     """Initialize a persistent AI session"""
     
@@ -75,11 +75,8 @@ def init(
             
         ai.use_provider(provider, **kwargs)
         
-        test_response = ai.generate("Hello", max_tokens=10)
-
         save_session_config(provider, model, api_key)
         typer.echo(f"Session initialized successfully!")
-        typer.echo(f"Test response: {test_response}")
         typer.echo(f"\nNow you can use: PAI prompt 'Your question here'")
         
     except Exception as e:
@@ -89,9 +86,8 @@ def init(
 @app.command()
 def prompt(
     text: str = typer.Argument(..., help="The prompt to send to the AI"),
-    #max_tokens: int = typer.Option(1500, "--max-tokens", help="Maximum tokens in response"),
-    temperature: float = typer.Option(0.7, "--temperature", "-t", help="Temperature for randomness (0.0-1.0)"),
-    show_config: bool = typer.Option(False, "--show-config", help="Show session config before response")
+    show_config: bool = typer.Option(False, "--show-config", help="Show session config before response"),
+    params: List[str] = typer.Option([], "--param", "-p", help="Parameters in format name=value (can be used multiple times)")
 ):
     """Send a prompt to the initialized AI session"""
     
@@ -102,8 +98,29 @@ def prompt(
             config = load_session_config()
             typer.echo(f"Using: {config['provider']} ({config['model']})")
         
-        response = ai.generate(text, temperature=temperature)
-        typer.echo(f"{response}")
+        kwargs = {}
+        for param in params:
+            try:
+                name, value = param.split('=', 1)
+                if value.lower() == 'true':
+                    kwargs[name] = True
+                elif value.lower() == 'false':
+                    kwargs[name] = False
+                else:
+                    if value.isdigit():
+                        kwargs[name] = int(value)
+                    elif all(c.isdigit() or c == '.' for c in value) and value.count('.') <= 1:
+                        kwargs[name] = float(value)
+                    else:
+                        kwargs[name] = value
+                        
+            except ValueError:
+                typer.echo(f"Invalid parameter format: {param}. Use name=value format.", err=True)
+     
+        response = ai.generate(text, **kwargs)
+        
+        final_response = ai.evaluate_response(text, response, **kwargs)
+        typer.echo(f"{final_response}")
         
     except Exception as e:
         typer.echo(f"Error: {e}", err=True)
