@@ -1,4 +1,4 @@
-name: Built and Lint 
+name: Built-Test-LintSuggestions 
 
 on:
   workflow_dispatch:
@@ -35,18 +35,31 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
+   
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        echo "${HOME}/.local/bin" >> $GITHUB_PATH
+
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        python -m pip install flake8 coverage
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        # Install the package in development mode
-        pip install -e .
+        poetry install
+        poetry add --group dev flake8 black isort
 
-    - name: Lint with flake8
+    
+    - name: Run tests with pytest
+      run: |
+        poetry run pytest
+        
+
+    - name: Lint suggestions with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        poetry run flake8 . --exclude=.venv,build,dist --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings
+        poetry run flake8 . --exclude=.venv,build,dist --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+    - name: Build package
+      run: |
+        poetry build
     
