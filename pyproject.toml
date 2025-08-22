@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools >= 42.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "PAI"
+version = "0.1.0"
+description = "A CLI personal assistant tool for working with everyday tasks"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+dependencies = [
+    "typer",
+    "openai",
+]
+
+[project.scripts]
+pai = "PAI.cli:app"
+
+[tool.setuptools]
+packages = ["PAI"]
+package-dir = {"" = "src"}
