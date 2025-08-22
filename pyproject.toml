@@ -1,22 +1,20 @@
 [build-system]
-requires = ["setuptools >= 42.0.0"]
-build-backend = "setuptools.build_meta"
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
 
-[project]
+[tool.poetry]
 name = "PAI"
 version = "0.1.0"
-description = "A CLI personal assistant tool for working with everyday tasks"
+description = "Personal AI Interface CLI"
 readme = "README.md"
-requires-python = ">=3.9"
-license = {text = "MIT"}
-dependencies = [
-    "typer",
-    "openai",
-]
+license = "MIT"
+authors = ["VarSamLewis", "J-Brannigan"]
+packages = [{ include = "PAI", from = "src" }]
 
-[project.scripts]
+[tool.poetry.dependencies]
+python = ">=3.11"
+typer = ">=0.12"
+openai = ">=1.0"
+
+[tool.poetry.scripts]
 pai = "PAI.cli:app"
-
-[tool.setuptools]
-packages = ["PAI"]
-package-dir = {"" = "src"}
