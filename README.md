@@ -137,9 +137,6 @@ poetry run python -m PAI --help
 
 ### To-Do
 
-### Audit, security, testing
-- [ ] Add audit trail
-- [ ] Add testing
 #### Context Management
 - [ ] Build session-level context manager (clears on reset)
 - [ ] Implement ChatMode context (full chat history)
@@ -176,11 +173,6 @@ poetry run python -m PAI --help
 - [ ] Security review
 - [ ] Safe mode (enhanced permissions, policy layer)
 
-### Functionality
-- [ ] Add more providers
-- [ ] Add tools and infrastructure for running them
-- [ ] Context management for LLMs
-- [ ] Add out-of-session commands
 #### Model Provider Management
 - [ ] Add more model providers (Anthropic, Ollama, LM Studio, local models)
 - [ ] Multi model for agent and assistant mode 
@@ -188,16 +180,11 @@ poetry run python -m PAI --help
 #### Misc Functionality
 - [ ] Implement out-of-session commands (quick prompts without session init, limited functioanlity)
 
-### Engineering good practice
-- [x] Add build tool (poetry)
-- [ ] Add GitHub Actions for CI/CD
-- [ ] Review code
 #### Engineering Good Practice
 - [ ] Add unit tests + integration tests
-- [ ] Add build tool (Poetry)
+- [x] Add build tool (Poetry)
 - [ ] Add GitHub Actions CI/CD
 - [ ] Review + refactor code
-
 
 ### Notes
 Only supports OpenAI  
