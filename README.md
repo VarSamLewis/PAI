@@ -100,7 +100,12 @@ If you prefer the module form, this also works:
 ```bash
 poetry run python -m PAI --help
 ```
-## To-Do
+
+### Running unit tests
+```bash
+poetry run pytest
+```
+
 ### Running modes
 
 #### 1. Chat Mode
