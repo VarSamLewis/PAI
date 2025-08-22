@@ -183,7 +183,8 @@ poetry run python -m PAI --help
 #### Engineering Good Practice
 - [ ] Add unit tests + integration tests
 - [x] Add build tool (Poetry)
-- [ ] Add GitHub Actions CI/CD
+- [x] Add GitHub Actions CI/C
+- [ ] Ammend Build_and_Lint to use poetry build rather than requirements.txt
 - [ ] Review + refactor code
 
 ### Notes
