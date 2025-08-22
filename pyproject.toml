@@ -1,0 +1,20 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "PAI"
+version = "0.1.0"
+description = "Personal AI Interface CLI"
+readme = "README.md"
+license = "MIT"
+authors = ["VarSamLewis", "J-Brannigan"]
+packages = [{ include = "PAI", from = "src" }]
+
+[tool.poetry.dependencies]
+python = ">=3.11"
+typer = ">=0.12"
+openai = ">=1.0"
+
+[tool.poetry.scripts]
+pai = "PAI.cli:app"
