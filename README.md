@@ -1,51 +1,106 @@
-﻿# PAI
-A CLI personal assistant tool for working with everyday tasks, the main selling point is that it gives users control over what models are run, where they are run, what data is used and where it goes. 
+# PAI
 
-## How to run 
+A CLI personal assistant for everyday tasks. The goal is to give you control over which models run, where they run, what data is used, and where that data goes.
 
-### Initalise session
-```python
-python -m PAI init openai --model gpt-4o-mini
+## Requirements
+
+- Python 3.11 or newer
+- [Poetry](https://python-poetry.org/) installed
+- An API key for your chosen provider (currently OpenAI). For OpenAI, set `OPENAI_API_KEY` in your environment
+
+## Install Poetry
+
+The simplest way is the official installer.
+
+**macOS/Linux**
+```bash
+curl -sSL https://install.python-poetry.org | python3 -
 ```
 
-### Prompt model
-```python
-python -m PAI prompt "What is the capital of France?"
+**Alternative (macOS Homebrew)**
+```bash
+brew install poetry
 ```
 
-### Check session status
-```python
-python -m PAI prompt "What is the capital of France?"
+**Windows (PowerShell)**
+```powershell
+(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -
 ```
 
-###  chat
-```python
-python -m PAI chat
-Interactive chat with openai (gpt-4o-mini)
-Type 'exit', 'quit', or press Ctrl+C to end
-
-You: "What's the first wonder of the world"
-AI: The term "wonders of the world" can refer to different lists, but the most famous is the Seven Wonders of the Ancient World. The first of these is the Great Pyramid of Giza in Egypt. It is the only one of the seven wonders that still exists today. If you meant a different list, such as the New Seven Wonders, please let me know!
-
-You: exit
-Chat ended!
-
+**Verify**
+```bash
+poetry --version
 ```
 
-### Quit session
-```python
-python -m PAI reset
+
+## Quickstart with Poetry
+
+```bash
+# Optional: put the virtualenv inside the project folder as .venv
+poetry config virtualenvs.in-project true --local
+# From the repo root
+poetry install
+
+# Run commands without leaving your shell
+poetry run pai --help
 ```
 
-### List available providers
-```python
-python -m PAI providers
-Available Providers:
-   - openai
+### Configure your API key
 
-Use 'pai init <provider> --model <model>' to initialize a session
+Mac/Linux (bash/zsh):
+```bash
+export OPENAI_API_KEY="sk-..."
 ```
 
+Windows PowerShell:
+```powershell
+$env:OPENAI_API_KEY = "sk-..."
+```
+
+## Usage
+
+Initialise a session (OpenAI example):
+```bash
+poetry run pai init openai --model gpt-4o-mini
+```
+
+Send a one-off prompt:
+```bash
+poetry run pai prompt "What is the capital of France?"
+```
+
+Check session status:
+```bash
+poetry run pai status
+```
+
+Interactive chat:
+```bash
+poetry run pai chat
+# Type 'exit' or 'quit' (or press Ctrl+C) to end
+```
+
+Reset the session:
+```bash
+poetry run pai reset
+```
+
+List available providers:
+```bash
+poetry run pai providers
+# Example output:
+# Available Providers:
+#    - openai
+#
+# Use 'pai init <provider> --model <model>' to initialize a session
+```
+
+### Alternate invocation
+If you prefer the module form, this also works:
+```bash
+poetry run python -m PAI --help
+```
+## To-Do
 ### Running modes
 
 #### 1. Chat Mode
@@ -115,6 +170,8 @@ Use 'pai init <provider> --model <model>' to initialize a session
 - [ ] Session constraints (tools, resources available)
 - [ ] Ensure audit logs are secure and queryable
 - [ ] Validation steps
+- [ ] Security review
+- [ ] Safe mode (enhanced permissions, policy layer)
 
 #### Model Provider Management
 - [ ] Add more model providers (Anthropic, Ollama, LM Studio, local models)
@@ -125,22 +182,13 @@ Use 'pai init <provider> --model <model>' to initialize a session
 
 #### Engineering Good Practice
 - [ ] Add unit tests + integration tests
-- [ ] Add build tool (Poetry)
+- [x] Add build tool (Poetry)
 - [ ] Add GitHub Actions CI/CD
 - [ ] Review + refactor code
-
 
 ### Notes
 Only supports OpenAI  
 Do all model providers have the capability to accept system prompts?
 
-### How to run
-
-Clone the repository
-
-You need the following: 
-	Python (I use 3.11 nut I think older versions should work as well)
-	typer
-	openai (alonmg with an active api key saved as an environment variable "OPENAI_API_KEY")
-
-It should be OS independennt but I've only tested on windows so far.
+## Licence
+MIT
