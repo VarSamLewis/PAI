@@ -152,8 +152,8 @@ poetry run pytest
 - [ ] Add token usage tracking + limits (FinOps-style budget)
 
 #### Resource Management
-- [ ] Make resource manager (similar to tool manager))
-- [ ] Create resource storage (JSON)
+- [ ] Make resource manager (similar to tool manager)) - Sam L
+- [ ] Create resource store (JSON) - Sam L
 - [ ] Implement resource retrieval 
 - [ ] Implement resource request API for LLM/tool usage (for things like external S3 buckets)
 - [ ] Add resource interactions (CRUD operations)
@@ -186,10 +186,10 @@ poetry run pytest
 - [ ] Implement out-of-session commands (quick prompts without session init, limited functioanlity)
 
 #### Engineering Good Practice
-- [ ] Add unit tests + integration tests
+- [x] Add unit tests + integration tests
 - [x] Add build tool (Poetry)
 - [x] Add GitHub Actions CI/C
-- [ ] Ammend Build_and_Lint to use poetry build rather than requirements.txt
+- [x] Ammend Build_and_Lint to use poetry build rather than requirements.txt
 - [ ] Review + refactor code
 
 ### Notes
