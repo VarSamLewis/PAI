@@ -143,9 +143,12 @@ poetry run pytest
 ### To-Do
 
 #### Context Management
-- [ ] Build session-level context manager (clears on reset)
+- [x] Build context manager as a single interface for tools and resources
+- [x] Implement contextmanager prompt in PAI.generate 
+- [ ] Build session-level context manager (contains chat history, clears on reset)
 - [ ] Implement ChatMode context (full chat history)
 - [ ] Implement PromptMode context (session summary, resource usage, limited reprompts)
+- [ ] Implement tool caching in context manager
 - [ ] Implement AgentMode context (unlimited reprompt → tool → re-prompt loops)
 - [ ] Implement AssistantMode context (continuous execution)
 - [ ] Implement All-InMode context (agent + full session memory)?
@@ -154,11 +157,11 @@ poetry run pytest
 #### Resource Management
 - [x] Make resource manager (similar to tool manager))
 - [x] Create resource storage (JSON)
+- [x] Expose resource metadata to model using context manager
+- [x] Add resource interactions (CRUD operations)
 - [ ] Implement resource retrieval
-- [ ] Expose resource metadata to model using context manager
 - [ ] Refactor resource strategy for very large resources repositories.  (We currently read all resources into memeory in order to avoid duplication and find resources)
 - [ ] Implement resource request API for LLM/tool usage (for things like external S3 buckets)
-- [x] Add resource interactions (CRUD operations)
 - [ ] Define resource interaction with  llm per running mode (chat, prompt, agent, assistant)
 
 #### Policy Management
@@ -167,10 +170,10 @@ poetry run pytest
 - [ ] Conduct security review (permissions, sandboxing, policy validation)
 
 #### Tool Management
+- [x] Expose tool register to model using context manager
 - [ ] Add more tools (file system, web scraping, API calls, database access)
 - [ ] Implement loop for sucessive tool chaining (include cli optional parameter to limit number for prompt mode)
-- [ ] Expose tool register to model using context manager
-- [ ] Implement tool caching in context manager
+
 
 #### Audit, Security
 - [ ] Log all prompts, tool calls, resource accesses, model responses
@@ -183,10 +186,11 @@ poetry run pytest
 
 #### Model Provider Management
 - [ ] Add more model providers (Anthropic, Ollama, LM Studio, local models)
+- [ ] Model provider & model metadata? (Is this really our job)
 - [ ] Multi model for agent and assistant mode 
 
 #### Misc Functionality
-- [ ] Implement out-of-session commands (quick prompts without session init, limited functioanlity)
+- [ ] Implement out-of-session commands (quick prompts without session init, limited functionality)
 
 #### Engineering Good Practice
 - [x] Add unit tests + integration tests
