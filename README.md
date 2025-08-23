@@ -152,11 +152,13 @@ poetry run pytest
 - [ ] Add token usage tracking + limits (FinOps-style budget)
 
 #### Resource Management
-- [ ] Make resource manager (similar to tool manager))
-- [ ] Create resource storage (JSON)
-- [ ] Implement resource retrieval 
+- [x] Make resource manager (similar to tool manager))
+- [x] Create resource storage (JSON)
+- [ ] Implement resource retrieval
+- [ ] Expose resource metadata to model using context manager
+- [ ] Refactor resource strategy for very large resources repositories.  (We currently read all resources into memeory in order to avoid duplication and find resources)
 - [ ] Implement resource request API for LLM/tool usage (for things like external S3 buckets)
-- [ ] Add resource interactions (CRUD operations)
+- [x] Add resource interactions (CRUD operations)
 - [ ] Define resource interaction with  llm per running mode (chat, prompt, agent, assistant)
 
 #### Policy Management
@@ -167,7 +169,8 @@ poetry run pytest
 #### Tool Management
 - [ ] Add more tools (file system, web scraping, API calls, database access)
 - [ ] Implement loop for sucessive tool chaining (include cli optional parameter to limit number for prompt mode)
-- [ ] Create venv for tool execution (isolate from main process, library dependicies)?
+- [ ] Expose tool register to model using context manager
+- [ ] Implement tool caching in context manager
 
 #### Audit, Security
 - [ ] Log all prompts, tool calls, resource accesses, model responses
@@ -186,10 +189,10 @@ poetry run pytest
 - [ ] Implement out-of-session commands (quick prompts without session init, limited functioanlity)
 
 #### Engineering Good Practice
-- [ ] Add unit tests + integration tests
+- [x] Add unit tests + integration tests
 - [x] Add build tool (Poetry)
-- [x] Add GitHub Actions CI/C
-- [ ] Ammend Build_and_Lint to use poetry build rather than requirements.txt
+- [x] Add GitHub Actions CI/CD
+- [x] Ammend Build_and_Lint to use poetry build rather than requirements.txt
 - [ ] Review + refactor code
 
 ### Notes

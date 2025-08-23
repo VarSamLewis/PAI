@@ -1,0 +1,15 @@
+{
+  "resources": [
+    {
+      "Name": "example_resource",
+      "ID": "89d32618-3532-449a-9d67-9b455ff12054",
+      "Description": "An example resource for demonstration purposes",
+      "ContentType": "file",
+      "Content": "Hello LLM",
+      "Size": 0.0,
+      "LastModified": "2025-08-23T02:37:57.766191",
+      "Filetype": "txt",
+      "Tags": null
+    }
+  ]
+}
