@@ -4,7 +4,7 @@ import datetime
 
 class Resource(BaseModel):
     Name: str
-    ID: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    ID: str 
     Description: str
     ContentType: Optional[str] = None
     Content: str
