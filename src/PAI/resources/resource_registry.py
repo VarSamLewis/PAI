@@ -1,7 +1,7 @@
 ﻿import json
 import logging
 import datetime
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Any, Union
 import uuid
 from pathlib import Path
 from .resource_validator import Resource, ResourceCollection
@@ -9,17 +9,23 @@ from .resource_validator import Resource, ResourceCollection
 logger = logging.getLogger(__name__)
 
 class ResourceRegistry:
+    """
+    Registry for managing resources.
+    """
 
     @classmethod
-    def create_resource(cls, 
-                     Name: str, 
-                     content: str, 
-                     Description: str, 
-                     ContentType = None, 
-                     local_file: bool = False, 
-                     Filetype: str = None,
-                     Tags: List[str] = None, 
-                     path: Path = None) -> Dict:
+    def create_resource(
+        cls,
+        Name: str,
+        content: str,
+        Description: str,
+        ContentType: Optional[str] = None,
+        local_file: bool = False,
+        Filetype: Optional[str] = None,
+        Tags: Optional[List[str]] = None,
+        path: Optional[Path] = None
+    ) -> Optional[Dict[str, Any]]:
+        """Create a new resource and add it to the registry."""
         
         try:
             try:
@@ -67,64 +73,74 @@ class ResourceRegistry:
             raise
 
     @classmethod
-    def update_resource(cls, 
-                     Name: str, 
-                     content: str, 
-                     Description: str, 
-                     ContentType = None, 
-                     local_file: bool = False, 
-                     Filetype: str = None,
-                     Tags: List[str] = None,
-                     path: Path = None) -> Dict:
+    def update_resource(
+        cls,
+        Name: str,
+        content: str,
+        Description: str,
+        ContentType: Optional[str] = None,
+        local_file: bool = False,
+        Filetype: Optional[str] = None,
+        Tags: Optional[List[str]] = None,
+        path: Optional[Path] = None
+    ) -> Dict[str, Any]:
+        """Update an existing resource in the registry."""
 
-       resources = cls.get_resources(path)
-       resources_list = resources.get("resources", [])
-       resource_found = False
+        resources = cls.get_resources(path)
+        resources_list = resources.get("resources", [])
+        resource_found = False
 
-       if ContentType:
-                content = cls._handle_content_type(content, ContentType, local_file)
-       
-       size = cls._get_resource_size(content)
+        if ContentType:
+            content = cls._handle_content_type(content, ContentType, local_file)
 
-       try:
-           for i, resource in enumerate(resources_list):
-                    if resource.get("Name") == Name:
-                        logger.info(f"Resource found: {Name} (ID: {resource.get('ID')})")
-                        resource_found = True
-                    
-                        resources_list[i].update({
-                            "Description": Description,
-                            "Content": content,
-                            "Size": size,
-                            "LastModified": datetime.datetime.now().isoformat(),
-                            "ContentType": ContentType if ContentType else resources_list[i].get("ContentType"),
-                            "Filetype": Filetype if Filetype else resources_list[i].get("Filetype"),
-                            "Tags": Tags if Tags else resources_list[i].get("Tags")
-                        })
-                    
-                        updated_resource = resources_list[i]
-                        break
-            
-           if not resource_found:
-               logger.error(f"Resource not found with Name='{Name}'")
-               raise FileNotFoundError(f"Resource not found")
+        size = cls._get_resource_size(content)
 
-           path = cls._prepare_path(path)
-           path.parent.mkdir(parents=True, exist_ok=True)
-            
-           with open(path, "w") as f:
-                json.dump(resources, f, indent=2)    
+        try:
+            for i, resource in enumerate(resources_list):
+                if resource.get("Name") == Name:
+                    logger.info(f"Resource found: {Name} (ID: {resource.get('ID')})")
+                    resource_found = True
+
+                    resources_list[i].update({
+                        "Description": Description,
+                        "Content": content,
+                        "Size": size,
+                        "LastModified": datetime.datetime.now().isoformat(),
+                        "ContentType": ContentType if ContentType else resources_list[i].get("ContentType"),
+                        "Filetype": Filetype if Filetype else resources_list[i].get("Filetype"),
+                        "Tags": Tags if Tags else resources_list[i].get("Tags")
+                    })
+
+                    updated_resource = resources_list[i]
+                    break
+
+            if not resource_found:
+                logger.error(f"Resource not found with Name='{Name}'")
+                raise FileNotFoundError(f"Resource not found")
+
+            path = cls._prepare_path(path)
+            path.parent.mkdir(parents=True, exist_ok=True)
+
+            with open(path, "w") as f:
+                json.dump(resources, f, indent=2)
                 logger.info(f"Resource '{Name}' updated successfully")
                 return updated_resource
-            
-       except Exception as e:
-               logger.error(f"Error updating resource '{Name}': {e}")
-               raise
+
+        except Exception as e:
+            logger.error(f"Error updating resource '{Name}': {e}")
+            raise
        
 
+
     @classmethod
-    def delete_resource(cls, Name: str, ID = None, path: Path = None):
-        """Delete a specific resource by name or ID"""
+    def delete_resource(
+        cls,
+        Name: str,
+        ID: Optional[str] = None,
+        path: Optional[Path] = None
+    ) -> bool:
+        """Delete a specific resource by name or ID."""
+
         resources = cls.get_resources(path)
         resources_list = resources.get("resources", [])
         initial_count = len(resources_list)
@@ -157,7 +173,12 @@ class ResourceRegistry:
             raise
 
     @classmethod
-    def get_resource(cls, Name: str, ID = None, path: Path = None):
+    def get_resource(
+        cls,
+        Name: str,
+        ID: Optional[str] = None,
+        path: Optional[Path] = None
+    ) -> Dict[str, Any]:
         """Get a specific resource by name or ID"""
 
         resources = cls.get_resources(path)
@@ -171,8 +192,12 @@ class ResourceRegistry:
         raise FileNotFoundError(f"Resource not found")
 
     @classmethod
-    def get_resources(cls, path: Path = None):
-        """Access a resource location and return its content"""
+    def get_resources(
+        cls,
+        path: Optional[Path] = None
+    ) -> Dict[str, List[Dict[str, Any]]]:
+        """Return all resources from the registry."""
+
         path = cls._prepare_path(path)
         resources = {"resources": []}
 
@@ -203,8 +228,12 @@ class ResourceRegistry:
             raise
 
     @classmethod
-    def get_tool_metadata(cls, path: Path = None):
-        """Get metadata (everything except the content) for a specific resource by name or ID"""
+    def get_tool_metadata(
+        cls,
+        path: Optional[Path] = None
+    ) -> List[Dict[str, Any]]:
+        """Get metadata for all resources except their content."""
+
         resources = cls.get_resources(path)
 
         metadata = [
@@ -216,7 +245,12 @@ class ResourceRegistry:
         return metadata
 
     @classmethod
-    def _check_resource_exist(cls, Name: str) -> bool:
+    def _check_resource_exist(
+        cls,        
+        Name: str
+    ) -> bool:
+        """Check if a resource with the given name exists."""
+
         resources = cls.get_resources()
         for resource in resources.get("resources", []):
             if (Name and resource.get("Name") == Name):
@@ -224,7 +258,12 @@ class ResourceRegistry:
         return False
 
     @classmethod
-    def _prepare_path(cls, path: Path = None):
+    def _prepare_path(
+        cls,
+        path: Optional[Path] = None
+    ) -> Path:
+        """Prepare and return the path to the resource registry file."""
+
         if not path:
             module_dir = Path(__file__).parent.absolute()
             path = module_dir.joinpath("resources.json")
@@ -233,7 +272,12 @@ class ResourceRegistry:
         return path
 
     @classmethod
-    def _get_resource_size(cls,content: str) -> float:
+    def _get_resource_size(
+        cls,
+        content: str
+    ) -> float:
+        """Calculate the size of the resource content in megabytes."""
+
         if not content:
             logger.debug("Empty content, returning size 0.0")
             return 0.0
@@ -245,7 +289,13 @@ class ResourceRegistry:
         return round(mb_size, 2)
 
     @classmethod
-    def _handle_content_type(cls, content: str, ContentType: str, local_file: bool ):
+    def _handle_content_type(
+        cls,
+        content: str,
+        ContentType: str,
+        local_file: bool
+    ) -> str:
+        """Handle content based on its type and source."""
 
         if ContentType.lower() == "file":
             if local_file:
@@ -267,7 +317,12 @@ class ResourceRegistry:
         return content
 
     @classmethod
-    def _access_external_file(cls, path: str, credentials: Dict = None) -> str:
+    def _access_external_file(
+        cls,
+        path: str,
+        credentials: Optional[Dict[str, Any]] = None
+    ) -> str:
+        """Access and retrieve content from an external file or URL."""
         import requests
         from urllib.parse import urlparse
     
@@ -288,13 +343,10 @@ class ResourceRegistry:
                         headers = credentials['headers']
                     if 'token' in credentials:
                         headers['Authorization'] = f"Bearer {credentials['token']}"
-                    
+
                 response = requests.get(path, auth=auth, headers=headers)
                 response.raise_for_status()
                 return response.text
-
-
-            
             else:
                 logger.error(f"Unsupported file location: {path}")
                 raise ValueError(f"Unsupported file location: {path}")
@@ -311,5 +363,3 @@ class ResourceRegistry:
         except Exception as e:
             logger.error(f"Error accessing external file {path}: {e}")
             raise
-
-             
