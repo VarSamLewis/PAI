@@ -64,10 +64,7 @@ class PAI:
         if self.tool_enabled:
             context = ContentManager()
 
-            prompt = (
-                prompt
-                + context.create_prompt_context()
-            )
+            prompt = prompt + context.create_prompt_context()
         return self.session.generate(prompt, **kwargs)
 
     def call_tools(self, tool_list: Dict[str, Any]) -> Dict[str, Any]:
