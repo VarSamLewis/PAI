@@ -4,9 +4,11 @@ class ProviderRegistry:
     @classmethod
     def register(cls, name: str):
         """Decorator to register a provider class by name"""
+
         def inner_wrapper(wrapped_class):
             cls._registry[name] = wrapped_class
             return wrapped_class
+
         return inner_wrapper
 
     @classmethod

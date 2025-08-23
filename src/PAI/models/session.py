@@ -1,5 +1,6 @@
 from .model_registry import ProviderRegistry
 
+
 class ModelSession:
     def __init__(self):
         self.provider = None

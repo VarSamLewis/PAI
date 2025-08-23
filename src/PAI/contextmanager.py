@@ -6,6 +6,7 @@ from .resources.resource_registry import ResourceRegistry
 
 logger = logging.getLogger(__name__)
 
+
 class ContentManager:
     def __init__(self) -> None:
         self.tools_available: Optional[List[Dict[str, Any]]] = None
