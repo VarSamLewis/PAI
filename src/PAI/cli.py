@@ -54,7 +54,7 @@ def create_ai_from_config() -> PAI:
 @app.command()
 def init(
     provider: str = typer.Argument(..., help="AI provider (openai, anthropic, etc.)"),
-    model: str = typer.Option("gpt-4o-mini", "--model", "-m", help="Model to use"),
+    model: str = typer.Option(None, "--model", "-m", help="Model to use"),
     api_key: Optional[str] = typer.Option(
         None, "--api-key", help="API key (overrides environment variable)"
     ),

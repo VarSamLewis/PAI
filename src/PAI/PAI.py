@@ -8,9 +8,9 @@ from .tools.tool_registry import ToolRegistry
 from .resources.resource_registry import ResourceRegistry
 from .contextmanager import ContentManager
 from .models.OpenAI_client import OpenAIClient
+from .models.Anthropic_client import AnthropicClient
 
 # Add more imports as you create providers:
-# from .models.anthropic_client import AnthropicClient
 # from .models.huggingface_client import HuggingFaceClient
 # from .models.local_client import LocalClient
 
@@ -43,8 +43,12 @@ class PAI:
         return self
 
     def use_openai(self, **kwargs) -> "PAI":
-        """Initialize OpenAI provider - passes all arguments directly to OpenAIClient"""
+        """Initialize OpenAI provider - passes all arguments directly to AnthropicClient"""
         return self.use_provider("openai", **kwargs)
+
+    def use_anthropic(self, **kwargs) -> "PAI":
+        """Initialize Anthropic provider - passes all arguments directly to AnthropicClient"""
+        return self.use_provider("anthropic", **kwargs)
 
     def generate(self, prompt: str, **kwargs) -> str:
         """
