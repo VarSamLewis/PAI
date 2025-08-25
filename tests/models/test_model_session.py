@@ -1,5 +1,5 @@
 import pytest
-from PAI.models.session import ModelSession
+from PAI.models.model_session import ModelSession
 from PAI.models.model_registry import ProviderRegistry
 
 

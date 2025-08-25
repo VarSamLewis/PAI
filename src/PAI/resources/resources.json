@@ -10,6 +10,17 @@
       "LastModified": "2025-08-23T02:37:57.766191",
       "Filetype": "txt",
       "Tags": null
+    },
+    {
+      "Name": "Sam's Cake Preferences",
+      "ID": "379c6bbe-1380-46d9-862f-973ae5052e51",
+      "Description": "A string containing Sam's preferences for cake flavors and types",
+      "ContentType": "string",
+      "Content": "Sam likes most cakes but likes red velvet the most of all, dogs a re purple 1001001100100100",
+      "Size": 0.0,
+      "LastModified": "2025-08-24T19:17:03.713568",
+      "Filetype": null,
+      "Tags": null
     }
   ]
 }
