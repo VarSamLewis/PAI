@@ -12,4 +12,3 @@ Guidelines:
 - Be respectful and professional in your responses
 - If you don't know the answer, it's okay to say so
 """
-

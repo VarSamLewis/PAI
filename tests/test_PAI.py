@@ -35,7 +35,9 @@ def test_PAI_use_provider_1(mocker):
     pai = PAI("Test_Session")
     mock_init = mocker.patch.object(pai.model_session, "init")
     result = pai.use_provider("test-provider", model="test-model", param="value")
-    mock_init.assert_called_once_with("test-provider", model="test-model", param="value")
+    mock_init.assert_called_once_with(
+        "test-provider", model="test-model", param="value"
+    )
     assert pai.current_provider == "test-provider"
     assert pai.current_model == "test-model"
     assert result is pai

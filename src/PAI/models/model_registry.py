@@ -1,5 +1,6 @@
 from PAI.utils.logger import logger
 
+
 class ProviderRegistry:
     _registry = {}
 

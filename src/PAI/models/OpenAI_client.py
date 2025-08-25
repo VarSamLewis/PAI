@@ -5,6 +5,7 @@ from . import systemprompt
 
 from PAI.utils.logger import logger
 
+
 @ProviderRegistry.register("openai")
 class OpenAIClient:
     def __init__(self, api_key: str = None, model: str = "gpt-3.5-turbo", **kwargs):

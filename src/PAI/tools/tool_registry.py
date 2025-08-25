@@ -69,7 +69,6 @@ class ToolRegistry:
             if param_type == "numeric":
                 param_type = "number"
 
-
             prop = {"type": param_type}
 
             if "description" in param_info:

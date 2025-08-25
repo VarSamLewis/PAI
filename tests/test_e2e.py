@@ -21,7 +21,9 @@ def test_cli_init():
     """
     E2E test for 'pai init test openai --model gpt-4o-mini'
     """
-    stdout, stderr, code = run_cli_command(["init", "test", "openai", "--model", "gpt-4o-mini"])
+    stdout, stderr, code = run_cli_command(
+        ["init", "test", "openai", "--model", "gpt-4o-mini"]
+    )
     assert code == 0, f"Non-zero exit code: {code}, stderr: {stderr}"
     assert (
         "openai" in stdout.lower() or "initialized" in stdout.lower()

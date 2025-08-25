@@ -14,7 +14,7 @@ ResourceRegistry.create_resource(
 ResourceRegistry.create_resource(
     Name="Sam's Cake Preferences",
     Description="A string containing Sam's preferences for cake flavors and types",
-    content = "Sam likes most cakes but likes red velvet the most of all",
+    content="Sam likes most cakes but likes red velvet the most of all",
     ContentType="string",
     local_file=False,
     Filetype=None,

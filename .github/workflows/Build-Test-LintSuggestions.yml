@@ -59,6 +59,10 @@ jobs:
         # exit-zero treats all errors as warnings
         poetry run flake8 . --exclude=.venv,build,dist --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
+    - name: Format code with black
+      run: |
+        poetry run black src
+
     - name: Build package
       run: |
         poetry build

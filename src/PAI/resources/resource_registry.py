@@ -7,6 +7,7 @@ from .resource_validator import Resource, ResourceCollection
 
 from PAI.utils.logger import logger
 
+
 class ResourceRegistry:
     """
     Registry for managing resources.
@@ -29,7 +30,9 @@ class ResourceRegistry:
         try:
             try:
                 if cls._check_resource_exist(Name):
-                    logger.info(f"Resource with Name='{Name}' already exists. Skipping creation.")
+                    logger.info(
+                        f"Resource with Name='{Name}' already exists. Skipping creation."
+                    )
                     return None
             except Exception:
                 pass

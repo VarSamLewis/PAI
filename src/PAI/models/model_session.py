@@ -2,6 +2,7 @@ from .model_registry import ProviderRegistry
 
 from PAI.utils.logger import logger
 
+
 class ModelSession:
     def __init__(self):
         self.provider = None
