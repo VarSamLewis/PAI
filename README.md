@@ -125,33 +125,17 @@ poetry run pytest
 - **Audit**: Log prompts, responses, resource/tool usage; track token budget.
 
 #### 3. Agent Mode
-- **Purpose**: Autonomous loop of reasoning and acting (prompt → tool → reprompt).
-- **Context**: Full session reasoning context; multiple re-prompts allowed.
-- **Resources**: Read-only access to resources; request API allowed for external data.
-- **Tools**: Successive tool chaining enabled; tool manager enforces constraints.
-- **Policies**: Strong enforcement of tool/resource safety rules.
-- **Audit**: Logs include tool chains, resource CRUD, session constraints.
-
-#### 4. Assistant Mode
-- **Purpose**: Long-lived assistant performing continuous execution.
-- **Context**: Persistent across tasks; maintains working memory until session end/reset.
-- **Resources**: Full CRUD access; can orchestrate multiple resources.
-- **Tools**: Tool chaining with minimal limits; external venv for isolated tool execution.
-- **Policies**: Strong security/sandboxing, policy enforcement required.
-- **Audit**: Continuous tracking of actions, token usage, and outcomes.
+Same as prompt but unbounded 
 
 ### To-Do
 
 #### Context Management
 - [x] Build context manager as a single interface for tools and resources
 - [x] Implement contextmanager prompt in PAI.generate 
-- [ ] Build session-level context manager (contains chat history, clears on reset)
-- [ ] Implement ChatMode context (full chat history)
-- [ ] Implement PromptMode context (session summary, resource usage, limited reprompts)
-- [ ] Implement tool caching in context manager
+- [x] Build session-level context manager (contains chat history, clears on reset)
+- [x] Implement PromptMode context (resource usage, limited reprompts)
+- [ ] Implement tool/ resource caching in context manager (Maybe not, limiting tokens might be more important than compute)
 - [ ] Implement AgentMode context (unlimited reprompt → tool → re-prompt loops)
-- [ ] Implement AssistantMode context (continuous execution)
-- [ ] Implement All-InMode context (agent + full session memory)?
 - [ ] Add token usage tracking + limits (FinOps-style budget)
 
 #### Resource Management
@@ -159,10 +143,11 @@ poetry run pytest
 - [x] Create resource storage (JSON)
 - [x] Expose resource metadata to model using context manager
 - [x] Add resource interactions (CRUD operations)
-- [ ] Implement resource retrieval
-- [ ] Refactor resource strategy for very large resources repositories.  (We currently read all resources into memeory in order to avoid duplication and find resources)
+- [x] Implement resource retrieval
+- [ ] Refactor resource strategy for very large resources repositories.  (We currently read all resources into memeory in order to avoid duplication and find resources, solve when I get round to it)
 - [ ] Implement resource request API for LLM/tool usage (for things like external S3 buckets)
-- [ ] Define resource interaction with  llm per running mode (chat, prompt, agent, assistant)
+- [ ] Define resource interaction with  llm per running mode (chat, prompt, agent)
+- [ ] Fix extract resource 
 
 #### Policy Management
 - [ ] Create policy manager (similar to tool manager, scan prompts for policy adherence)
@@ -173,20 +158,21 @@ poetry run pytest
 - [x] Expose tool register to model using context manager
 - [ ] Add more tools (file system, web scraping, API calls, database access)
 - [ ] Implement loop for sucessive tool chaining (include cli optional parameter to limit number for prompt mode)
+- [ ] Fix extract tool method
 
 
 #### Audit, Security
-- [ ] Log all prompts, tool calls, resource accesses, model responses
-- [ ] Include metadata: who, when, model/provider, token usage
+- [x] Log all prompts, tool calls, resource accesses, model responses
+- [×] Include metadata: who, when, model/provider, token usage
 - [ ] Session constraints (tools, resources available)
-- [ ] Ensure audit logs are secure and queryable
+- [ ] Ensure audit logs are secure and queryable (check where is the best place to store them)
 - [ ] Validation steps
 - [ ] Security review
 - [ ] Safe mode (enhanced permissions, policy layer)
 
 #### Model Provider Management
-- [ ] Add more model providers (Anthropic, Ollama, LM Studio, local models)
-- [ ] Model provider & model metadata? (Is this really our job)
+- [ ] Add more model providers (Ollama, LM Studio, local models)
+- [ ] Function in PAI to switch models in a session
 - [ ] Multi model for agent and assistant mode 
 
 #### Misc Functionality
@@ -201,8 +187,7 @@ poetry run pytest
 - [ ] Obsfucate api keys in logs (if provided)
 
 ### Notes
-Only supports OpenAI  
-Do all model providers have the capability to accept system prompts?
+Model is being fed resources but doesn't reliablly read them
 
 ## Licence
 MIT
