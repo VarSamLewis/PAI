@@ -3,6 +3,15 @@ from typing import Optional, List, Dict
 from pathlib import Path
 from .PAI import PAI
 from .contextmanager import ContentManager
+import logging
+
+from PAI.utils.logger import logger
+
+def _access_console_hadler(verbose):
+    for handler in logger.handlers:
+        if isinstance(handler, logging.StreamHandler):
+            handler.setLevel("DEBUG" if verbose else "INFO")
+            return handler
 
 app = typer.Typer(help="Personal AI Interface - Initialize once, prompt many times")
 
@@ -11,8 +20,11 @@ def init(
     session_name: str = typer.Argument("default", help="Session name"),
     provider: str = typer.Argument(..., help="AI provider (openai, anthropic, etc.)"),
     model: str = typer.Option(None, "--model", "-m", help="Model to use"),
-    api_key: Optional[str] = typer.Option(None, "--api-key", help="API key")
+    api_key: Optional[str] = typer.Option(None, "--api-key", help="API key"),
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose logging"),
 ):
+    _access_console_hadler(verbose)
+
     try:
         ai = PAI(session_name)
         available_providers = PAI.available_providers()
@@ -37,7 +49,10 @@ def prompt(
     text: str = typer.Argument(..., help="The prompt to send to the AI"),
     show_session_log: bool = typer.Option(False, "--show-session_log", help="Show session log before response"),
     params: List[str] = typer.Option([], "--param", "-p", help="Parameters in format name=value (can be used multiple times)"),
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose logging"),
 ):
+    _access_console_hadler(verbose)
+
     try:
         ai = PAI(session_name)
         ai.load_session()
@@ -61,16 +76,26 @@ def prompt(
             except ValueError:
                 typer.echo(f"Invalid parameter format: {param}. Use name=value format.", err=True)
         response = ai.generate(text, **kwargs)
-        final_response = ai.evaluate_response(text, response, **kwargs)
-        ai.add_prompt(text, final_response)
+        final_response, tool_use, resource_use = ai.evaluate_response(text, response, **kwargs)
+        prompt_log = (
+            f"{final_response}\n"
+            f"Tool usage: {tool_use}\n"
+            f"Resource usage: {resource_use}"
+        )
+        ai.add_prompt(text, prompt_log)
         typer.echo(f"{final_response}")
     except Exception as e:
         typer.echo(f"Error: {e}", err=True)
         raise typer.Exit(1)
 
 @app.command()
-def status():
+def status(
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose logging"),
+    ):
     """Show current session status"""
+
+    _access_console_hadler(verbose)
+
     try:
         ai = PAI()
         ai.load_session()
@@ -87,8 +112,13 @@ def status():
         typer.echo("Run 'PAI init <provider>' to create a session")
 
 @app.command()
-def reset():
+def reset(
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose logging"),
+    ):
     """Close the current PAI session"""
+    
+    _access_console_hadler(verbose)
+
     try:
         ai = PAI()
         ai.reset()
@@ -97,8 +127,13 @@ def reset():
         typer.echo(f"Failed to close session: {e}", err=True)
 
 @app.command()
-def test():
+def test(
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose logging"),
+    ):
     """Test the current session with a simple prompt"""
+    
+    _access_console_hadler(verbose)
+
     try:
         ai = PAI()
         ai.load_session()
@@ -111,8 +146,13 @@ def test():
         raise typer.Exit(1)
 
 @app.command()
-def providers():
+def providers(
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose logging"),
+    ):
     """List available providers and their default models"""
+    
+    _access_console_hadler(verbose)
+    
     providers = PAI.available_providers()
     typer.echo("Available Providers:")
     for provider in providers:

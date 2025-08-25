@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field, ValidationError, field_validator
 from typing import List, Optional, Dict
 import datetime
 
+from PAI.utils.logger import logger
 
 class Resource(BaseModel):
     Name: str
@@ -20,6 +21,7 @@ class Resource(BaseModel):
     def validate_iso_date(cls, v):
         try:
             datetime.datetime.fromisoformat(v)
+            logger.info(f"Validated Resource LastModified date: {v}")
             return v
         except ValueError:
             raise ValueError("LastModified must be a valid ISO format date")

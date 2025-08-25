@@ -1,3 +1,5 @@
+from PAI.utils.logger import logger
+
 class ProviderRegistry:
     _registry = {}
 
@@ -7,6 +9,7 @@ class ProviderRegistry:
 
         def inner_wrapper(wrapped_class):
             cls._registry[name] = wrapped_class
+            logger.info(f"Registered provider: {name}")
             return wrapped_class
 
         return inner_wrapper
@@ -15,6 +18,7 @@ class ProviderRegistry:
     def get_provider(cls, name: str, **kwargs):
         if name not in cls._registry:
             raise ValueError(f"Unknown provider: {name}")
+        logger.info(f"Instantiating provider: {name} with args: {kwargs}")
         return cls._registry[name](**kwargs)
 
     @classmethod
