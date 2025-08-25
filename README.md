@@ -61,12 +61,12 @@ $env:OPENAI_API_KEY = "sk-..."
 
 Initialise a session (OpenAI example):
 ```bash
-poetry run pai init openai --model gpt-4o-mini
+poetry run pai init <session name> openai --model gpt-4o-mini
 ```
 
 Send a one-off prompt:
 ```bash
-poetry run pai prompt "What is the capital of France?"
+poetry run pai <session name> prompt "What is the capital of France?"
 ```
 
 Check session status:
