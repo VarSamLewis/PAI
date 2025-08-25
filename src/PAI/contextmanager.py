@@ -36,31 +36,50 @@ class ContentManager:
         logger.info(f"Resource metadata retrieved: {resource_metadata}")
         return resource_metadata
 
-    def create_prompt_context(self) -> str:
+    def create_prompt_context(self, session_log: dict) -> str:
         """
         Create a meta prompt context string including available tools and resources.
         """
         logger.debug("Creating prompt context.")
-        tool_list = self.get_tool_list()
-        resource_metadata = self.get_resource_metadata()
+
+        if session_log:
+            tool_list = session_log.get("tool_metadata", [])
+            resource_metadata = session_log.get("resource_metadata", [])
+        else:
+            tool_list = self.get_tool_list()
+            resource_metadata = self.get_resource_metadata()
+
         meta_prompt_text = f"""
-            You can call tools from this list {json.dumps(tool_list, indent=2)} using this format:
-                            ```
+            You have access to the following tools and resources.
+
+            TOOLS:
+            {json.dumps(tool_list, indent=2)}
+
+            RESOURCES:
+            {json.dumps(resource_metadata, indent=2)}
+
+            When answering, if you need to use a tool or resource, you MUST include a JSON block in your response using the format below.
+            After the JSON block, provide a plaintext answer using the content of the resource or tool result.
+
+            Tool call format:
+            Tool Request(s):
             {{
-                "name": "tool_name",
-                "args": {{
-                    "param1": "value1",
-                    "param2": "value2"
-                }}
-                }}
-            ```             You can also call for resources from this list {json.dumps(resource_metadata, indent=2)} using this format:         ``` 
-         {{
-              "Name": "example_resource",
-              "ID": "89d32618-3532-449a-9d67-9b455ff12054",
-              "Description": "An example resource for demonstration purposes",
-              "ContentType": "file"
-             }}
-         ```        """
+              "name": "tool_name",
+              "args": {{
+                "param1": "value1",
+                "param2": "value2"
+              }}
+            }}
+
+            Resource call format:
+            Request Request(s):
+            {{
+              "Name": "resource_name",
+              "ID": "resource_id",
+              "Description": "resource description",
+              "ContentType": "file or string"
+            }} """
+
         self.meta_prompt = meta_prompt_text
         logger.info("Meta prompt context created.")
         return meta_prompt_text

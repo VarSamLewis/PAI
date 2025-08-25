@@ -111,7 +111,7 @@ poetry run pytest
 #### 1. Chat Mode
 - **Purpose**: Lightweight conversational interface.
 - **Context**: Maintains full session chat history, cleared on reset.
-- **Resources**: Minimal (default resources only, no CRUD).
+- **Resources**: Minimal.
 - **Tools**: Limited to safe/basic tools, no chaining.
 - **Policies**: Pre-scan of prompts, basic safety rules applied.
 - **Audit**: Log all interactions with metadata.
@@ -127,7 +127,7 @@ poetry run pytest
 #### 3. Agent Mode
 - **Purpose**: Autonomous loop of reasoning and acting (prompt → tool → reprompt).
 - **Context**: Full session reasoning context; multiple re-prompts allowed.
-- **Resources**: CRUD access to resources; can interact with external storage (S3, DBs).
+- **Resources**: Read-only access to resources; request API allowed for external data.
 - **Tools**: Successive tool chaining enabled; tool manager enforces constraints.
 - **Policies**: Strong enforcement of tool/resource safety rules.
 - **Audit**: Logs include tool chains, resource CRUD, session constraints.
@@ -198,6 +198,7 @@ poetry run pytest
 - [x] Add GitHub Actions CI/CD
 - [x] Ammend Build_and_Lint to use poetry build rather than requirements.txt
 - [ ] Review + refactor code
+- [ ] Obsfucate api keys in logs (if provided)
 
 ### Notes
 Only supports OpenAI  
