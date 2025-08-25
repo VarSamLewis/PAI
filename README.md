@@ -32,6 +32,17 @@ brew install poetry
 poetry --version
 ```
 
+## Get encryption keys
+PAI uses encryption to store sensitive data like API keys. 
+
+To generate an encryption key, run the following Python snippet and set this as the `PAI_ENCRYPTION_KEY` environment variable.
+
+```python
+from cryptography.fernet import Fernet
+
+key = Fernet.generate_key()
+print(key.decode())  # This prints a base64-encoded string you can use as your encryption key
+```
 
 ## Quickstart with Poetry
 
@@ -46,6 +57,25 @@ poetry run pai --help
 ```
 
 ### Configure your API key
+
+#### API Key Storage and Usage
+
+PAI supports two ways to provide API keys for model providers:
+
+1. **Environment Variable (Recommended):**
+   - Set your API key as an environment variable (e.g., `OPENAI_API_KEY`).
+   - If no API key is provided during session initialization, PAI will automatically use the environment variable.
+
+2. **Session Storage (Optional):**
+   - You may supply an API key directly when initializing a session.
+   - If provided, the API key is **encrypted** before being saved to disk using Fernet symmetric encryption.
+   - The encryption key must be set as the `PAI_ENCRYPTION_KEY` environment variable.
+   - When loading a session, the API key is decrypted and used for provider authentication.
+
+**Security Note:**  
+API keys stored in session files are always encrypted and are stored outside of the git repo in your home directly (can be ammended but is not recommended). 
+For maximum security, prefer environment variables and avoid sharing session files containing sensitive information. 
+
 
 Mac/Linux (bash/zsh):
 ```bash
@@ -188,6 +218,7 @@ Same as prompt but unbounded
 
 ### Notes
 Model is being fed resources but doesn't reliablly read them
+Model always tries to read resources even when instructed not to
 
 ## Licence
 MIT
