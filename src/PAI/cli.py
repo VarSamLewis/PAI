@@ -61,14 +61,15 @@ def init(
 def prompt(
     session_name: str = typer.Argument("default", help="Session name"),
     text: str = typer.Argument(..., help="The prompt to send to the AI"),
-    show_session_log: bool = typer.Option(
-        False, "--show-session_log", help="Show session log before response"
-    ),
-    params: List[str] = typer.Option(
+    iterations: int = typer.Option(2, "--iterations", "-n", help="Number of iterations for the prompt"),
+        params: List[str] = typer.Option(
         [],
         "--param",
         "-p",
         help="Parameters in format name=value (can be used multiple times)",
+    ),
+    show_session_log: bool = typer.Option(
+        False, "--show-session_log", help="Show session log before response"
     ),
     verbose: bool = typer.Option(
         False, "--verbose", "-v", help="Enable verbose logging"
@@ -104,16 +105,12 @@ def prompt(
                     f"Invalid parameter format: {param}. Use name=value format.",
                     err=True,
                 )
-        response = ai.generate(text, **kwargs)
-        final_response, tool_use, resource_use = ai.evaluate_response(
-            text, response, **kwargs
-        )
-        prompt_log = (
-            f"{final_response}\n"
-            f"Tool usage: {tool_use}\n"
-            f"Resource usage: {resource_use}"
-        )
-        ai.add_prompt(text, prompt_log)
+
+        final_response, tool_use, resource_use = ai.generate_loop(
+            text, iterations=iterations, **kwargs
+            )
+
+        #ai.add_prompt(text, prompt_log)
         typer.echo(f"{final_response}")
     except Exception as e:
         typer.echo(f"Error: {e}", err=True)
