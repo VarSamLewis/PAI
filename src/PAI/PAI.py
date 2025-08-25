@@ -17,7 +17,7 @@ from .models.Anthropic_client import AnthropicClient
 # from .models.local_client import LocalClient
 
 from PAI.utils.logger import logger
-
+from PAI.utils.encrypt import encrypt_api_key, decrypt_api_key
 
 class PAI:
     """
@@ -56,6 +56,8 @@ class PAI:
         self.use_provider(provider, model=model, api_key=api_key)
 
     def save_session(self):
+        if self.session_log.get("api_key"):
+            self.session_log["api_key"] = encrypt_api_key(self.session_log["api_key"])
         self.session_file.parent.mkdir(parents=True, exist_ok=True)
         with open(self.session_file, "w") as f:
             json.dump(self.session_log, f, indent=2)
@@ -65,6 +67,8 @@ class PAI:
         """Load existing session from file"""
         with open(self.session_file, "r") as f:
             self.session_log = json.load(f)
+        if self.session_log.get("api_key"):
+            self.session_log["api_key"] = decrypt_api_key(self.session_log["api_key"])
         self.use_provider(
             self.session_log["provider"],
             model=self.session_log["model"],
