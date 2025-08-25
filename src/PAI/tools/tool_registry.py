@@ -3,7 +3,7 @@ import json
 import logging
 from typing import Dict, Any, Callable, Optional, List
 
-logger = logging.getLogger(__name__)
+from PAI.utils.logger import logger
 
 
 class ToolRegistry:
@@ -32,7 +32,7 @@ class ToolRegistry:
         """
 
         def decorator(func):
-            # Use provided params or infer from function
+
             parameters = (
                 cls._build_parameter_schema(params)
                 if params
@@ -44,7 +44,7 @@ class ToolRegistry:
                 "description": description or func.__doc__ or "",
                 "parameters": parameters,
             }
-            logger.info(f"Registered tool: {name}")
+            logger.debug(f"Registered tool: {name}")
             return func
 
         return decorator
@@ -66,21 +66,18 @@ class ToolRegistry:
         for param_name, param_info in params.items():
             param_type = param_info.get("type", "string")
 
-            # Convert "numeric" type to "number" for JSON Schema compatibility
             if param_type == "numeric":
                 param_type = "number"
 
+
             prop = {"type": param_type}
 
-            # Add description if present
             if "description" in param_info:
                 prop["description"] = param_info["description"]
 
-            # Add enum if present
             if "enum" in param_info:
                 prop["enum"] = param_info["enum"]
 
-            # Add other JSON Schema validations if present
             for key in [
                 "minimum",
                 "maximum",
@@ -94,7 +91,6 @@ class ToolRegistry:
 
             properties[param_name] = prop
 
-            # Parameter is required unless it has a default value
             if "default" not in param_info:
                 required.append(param_name)
 

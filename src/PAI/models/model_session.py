@@ -1,5 +1,6 @@
 from .model_registry import ProviderRegistry
 
+from PAI.utils.logger import logger
 
 class ModelSession:
     def __init__(self):
@@ -7,6 +8,7 @@ class ModelSession:
 
     def init(self, provider_name: str, **kwargs):
         """Initialize session with a provider"""
+        logger.info(f"Initializing session with provider: {provider_name}")
         self.provider = ProviderRegistry.get_provider(provider_name, **kwargs)
 
     def generate(self, prompt: str, **kwargs):

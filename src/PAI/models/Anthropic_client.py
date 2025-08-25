@@ -3,6 +3,8 @@ import anthropic
 from .model_registry import ProviderRegistry
 from . import systemprompt
 
+from PAI.utils.logger import logger
+
 
 @ProviderRegistry.register("anthropic")
 class AnthropicClient:
@@ -13,6 +15,7 @@ class AnthropicClient:
 
     def generate(self, prompt: str, **kwargs):
         if not prompt.strip():
+            logger.error("Prompt cannot be empty")
             raise ValueError("Prompt cannot be empty")
 
         max_tokens = kwargs.get("max_tokens", 300)
@@ -32,6 +35,7 @@ class AnthropicClient:
         for k, v in kwargs.items():
             if k not in reserved:
                 params[k] = v
+                logger.debug(f"Setting custom parameter: {k}={v}")
 
         resp = self.client.messages.create(**params)
         return resp.content[0].text

@@ -1,13 +1,11 @@
 ﻿import json
-import logging
 import datetime
 from typing import Optional, List, Dict, Any, Union
 import uuid
 from pathlib import Path
 from .resource_validator import Resource, ResourceCollection
 
-logger = logging.getLogger(__name__)
-
+from PAI.utils.logger import logger
 
 class ResourceRegistry:
     """
@@ -31,9 +29,7 @@ class ResourceRegistry:
         try:
             try:
                 if cls._check_resource_exist(Name):
-                    logger.info(
-                        f"Resource with Name='{Name}' already exists. Skipping creation."
-                    )
+                    logger.info(f"Resource with Name='{Name}' already exists. Skipping creation.")
                     return None
             except Exception:
                 pass

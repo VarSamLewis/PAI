@@ -16,6 +16,8 @@ from .models.Anthropic_client import AnthropicClient
 # from .models.huggingface_client import HuggingFaceClient
 # from .models.local_client import LocalClient
 
+from PAI.utils.logger import logger
+
 
 class PAI:
     """
@@ -27,14 +29,16 @@ class PAI:
         self.current_model = None
         self.tool_enabled = True  # Q does implementation this mean I can't set this to false?
         self.resource_enabled = True
-        self.session_file = Path.home() / f".sessions/PAI_session_log_{session_name}.json"
+        self.session_file = Path.home() / f".PAI/PAI_session_logs/PAI_session_log_{session_name}.json"
         self.context = ContentManager()
 
     def init_session(self, session_name, provider, model, api_key=None):
         try:
             from .tools import tool_store
             from .resources import resource_store
+            logger.debug("Stores ran")
         except ImportError:
+            logger.warning("Failed to import stores")
             pass
         tool_list = ToolRegistry.get_tools()
         resource_metadata = ResourceRegistry.get_tool_metadata()
@@ -55,7 +59,7 @@ class PAI:
         self.session_file.parent.mkdir(parents=True, exist_ok=True)
         with open(self.session_file, "w") as f:
             json.dump(self.session_log, f, indent=2)
-            #print(f"Session data saved: {self.session_file}")
+            logger.info(f"Session data saved: {self.session_file}")
 
     def load_session(self):
         """Load existing session from file"""
@@ -66,11 +70,13 @@ class PAI:
             model=self.session_log["model"],
             api_key=self.session_log.get("api_key")
         )
+
     @classmethod
     def get_session_log(self):
         """Load existing session log from file"""
         with open(self.session_file, "r") as f:
             current_session_file = json.load(f)
+            logger.debug(f"Session data loaded: {self.session_file}")
         return current_session_file
 
     @classmethod
@@ -79,8 +85,7 @@ class PAI:
         if session_file is None:
             session_file = cls.session_file
 
-        with open(session_file, "r") as f:
-            session_log = json.load(f)
+        session_log = cls.get_session_log()
 
         ai = cls()
         provider = session_log["provider"]
@@ -100,7 +105,7 @@ class PAI:
             self.session_log["prompt_history"] = []
         self.session_log["prompt_history"].append({"prompt": prompt, "response": response})
         self.save_session()
-       #print(f"Session file saved at: {self.session_file}")
+        logger.info("Prompt and response added to session log")
 
     def use_provider(self, provider: str, **kwargs) -> "PAI":
         """
@@ -116,10 +121,11 @@ class PAI:
         self.model_session.init(provider, **kwargs)
         self.current_provider = provider
         self.current_model = kwargs.get("model")
+        logger.info(f"Using provider: {provider} with model: {self.current_model}")
         return self
 
     def use_openai(self, **kwargs) -> "PAI":
-        """Initialize OpenAI provider - passes all arguments directly to AnthropicClient"""
+        """Initialize OpenAI provider - passes all arguments directly to OpenAIClient"""
         return self.use_provider("openai", **kwargs)
 
     def use_anthropic(self, **kwargs) -> "PAI":
@@ -138,11 +144,12 @@ class PAI:
             Generated response string
         """
         if not self.model_session.provider:
-            raise RuntimeError(
-                "No provider initialized. Call use_openai(), use_anthropic(), etc. first."
-            )
+            logger.error("No provider initialized. Call use_openai(), use_anthropic(), etc. first.")
+            raise RuntimeError("No provider initialized. Call use_openai(), use_anthropic(), etc. first.")
+            
         if self.tool_enabled:
             prompt = prompt + self.context.create_prompt_context(self.session_log)
+            logger.debug(f"Prompt with context: {prompt}")
         return self.model_session.generate(prompt, **kwargs)
 
     def call_tools(self, tool_list: Dict[str, Any]) -> Dict[str, Any]:
@@ -156,7 +163,7 @@ class PAI:
             tool_args = request["args"]
             result = ToolRegistry.execute_tool(tool_name, tool_args)
             results.append(result)
-            #print(f"Tools result: {results}")
+            logger.debug(f"Tool result: {results}")
 
         return results
 
@@ -175,7 +182,8 @@ class PAI:
                 continue
             result = ResourceRegistry.get_resource(name, resource_id)
             results.append(result)
-            #print(f"Resources result: {results}")
+            logger.debug(f"Resource result: {results}")
+
         return results
 
     def evaluate_response(self, original_prompt: str, response: str, **kwargs) -> str:
@@ -192,8 +200,6 @@ class PAI:
             Final response, either original or with tool results/resource requests
         """
 
-        #print(f"Initial Response: {response} /n")
-
         if not self.tool_enabled and not self.resource_enabled:
             return response
 
@@ -207,11 +213,9 @@ class PAI:
 
 
         tool_results_json = json.dumps(tool_results, indent=2)
-        #print(f"Tool metadata:{tool_results_json}")
 
         resource_results = self.call_resources(request_calls)
         resource_results_json = json.dumps(resource_results, indent=2)
-        #print(f"Resource metadata:{resource_results_json}")
 
         resource_contents = []
         for res in resource_results:
@@ -227,11 +231,12 @@ class PAI:
          {resource_contents_text}
          IMPORTANT: Only use the information in the resource content above to answer the question. Do NOT guess or use outside knowledge. If the answer is not present, say "I can't find the answer in the resource."
          Please answer: {original_prompt}
-"""
-        #print(f"The following tools and resources were called \n tools: {tool_results_json} \n resources: {resource_results_json}")
-        #print(f"New Prompt: {new_prompt}")
+        """
+        tools_parameters_used = [tool_call for tool_call in tool_calls]
+        resource_parameters_used = [request_call for request_call in request_calls]
+
         final_response = self.model_session.generate(new_prompt, **kwargs)
-        return final_response
+        return final_response, tools_parameters_used, resource_parameters_used
 
     def _extract_tool_calls(self, text: str) -> List[Dict]:
         """
@@ -269,6 +274,7 @@ class PAI:
             except json.JSONDecodeError:
                 continue
 
+        logger.debug(f"Tools extracted: {tool_calls}")
         return tool_calls
 
     def _extract_resouce_call(self, text: str):
@@ -296,11 +302,13 @@ class PAI:
                     resource_calls.append(data)
             except json.JSONDecodeError:
                 continue
-
+        
+        logger.debug(f"Resources extracted: {resource_calls}")
         return resource_calls
 
     def reset(self,):
         """Close the current PAI session and clear session data"""
+        logger.info("Reset current session")
         self.session_log = None
         self.session_active = False
         self.current_provider = None
@@ -317,6 +325,7 @@ class PAI:
 
     def status(self) -> Dict[str, Any]:
         """Get current provider and model info"""
+        logger.debug("Fetching session status")
         return {
             "session_name": self.session_log.get("session_name") if self.session_log else None,
             "session_start_dt": self.session_log.get("session_start_dt") if self.session_log else None,

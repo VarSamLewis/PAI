@@ -4,7 +4,7 @@ from typing import Dict, Any, Optional, List
 from .tools.tool_registry import ToolRegistry
 from .resources.resource_registry import ResourceRegistry
 
-logger = logging.getLogger(__name__)
+from PAI.utils.logger import logger
 
 
 class ContentManager:

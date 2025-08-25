@@ -3,6 +3,7 @@ from openai import OpenAI
 from .model_registry import ProviderRegistry
 from . import systemprompt
 
+from PAI.utils.logger import logger
 
 @ProviderRegistry.register("openai")
 class OpenAIClient:
@@ -13,6 +14,7 @@ class OpenAIClient:
 
     def generate(self, prompt: str, **kwargs):
         if not prompt.strip():
+            logger.error("Prompt cannot be empty")
             raise ValueError("Prompt cannot be empty")
 
         params = {
@@ -28,6 +30,7 @@ class OpenAIClient:
         for k, v in kwargs.items():
             if k not in reserved:
                 params[k] = v
+                logger.debug(f"Setting custom parameter: {k}={v}")
 
         resp = self.client.chat.completions.create(**params)
         return resp.choices[0].message.content.strip()
