@@ -7,11 +7,20 @@ import logging
 
 from PAI.utils.logger import logger
 
+"""
 def _access_console_hadler(verbose):
+    level = logging.DEBUG if verbose else logging.WARNING
+    logger.setLevel(level)
     for handler in logger.handlers:
+        logger.setLevel(level)
         if isinstance(handler, logging.StreamHandler):
-            handler.setLevel("DEBUG" if verbose else "INFO")
+            handler.setLevel(level)
             return handler
+"""
+def _access_console_hadler(verbose):
+    logger.console_handler.setLevel(logging.DEBUG if verbose else logging.WARNING)
+    #print(f"Logging level set to {'DEBUG' if verbose else 'WARNING'}")
+
 
 app = typer.Typer(help="Personal AI Interface - Initialize once, prompt many times")
 
