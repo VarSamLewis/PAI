@@ -6,7 +6,7 @@ log_file.parent.mkdir(parents=True, exist_ok=True)
 
 # Create root logger
 logger = logging.getLogger("PAI")
-logger.setLevel(logging.INFO)  
+logger.setLevel(logging.DEBUG)  
 
 file_handler = logging.FileHandler(log_file, mode='a')
 file_handler.setFormatter(logging.Formatter(
@@ -15,5 +15,7 @@ file_handler.setFormatter(logging.Formatter(
 logger.addHandler(file_handler)
 
 console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.WARNING)
 console_handler.setFormatter(logging.Formatter('[%(levelname)s] %(message)s'))
 logger.addHandler(console_handler)
+logger.console_handler = console_handler 
