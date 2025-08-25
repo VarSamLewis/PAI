@@ -17,12 +17,15 @@ def _access_console_hadler(verbose):
             handler.setLevel(level)
             return handler
 """
+
+
 def _access_console_hadler(verbose):
     logger.console_handler.setLevel(logging.DEBUG if verbose else logging.WARNING)
-    #print(f"Logging level set to {'DEBUG' if verbose else 'WARNING'}")
+    # print(f"Logging level set to {'DEBUG' if verbose else 'WARNING'}")
 
 
 app = typer.Typer(help="Personal AI Interface - Initialize once, prompt many times")
+
 
 @app.command()
 def init(
@@ -30,7 +33,9 @@ def init(
     provider: str = typer.Argument(..., help="AI provider (openai, anthropic, etc.)"),
     model: str = typer.Option(None, "--model", "-m", help="Model to use"),
     api_key: Optional[str] = typer.Option(None, "--api-key", help="API key"),
-    verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose logging"),
+    verbose: bool = typer.Option(
+        False, "--verbose", "-v", help="Enable verbose logging"
+    ),
 ):
     _access_console_hadler(verbose)
 
@@ -56,9 +61,18 @@ def init(
 def prompt(
     session_name: str = typer.Argument("default", help="Session name"),
     text: str = typer.Argument(..., help="The prompt to send to the AI"),
-    show_session_log: bool = typer.Option(False, "--show-session_log", help="Show session log before response"),
-    params: List[str] = typer.Option([], "--param", "-p", help="Parameters in format name=value (can be used multiple times)"),
-    verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose logging"),
+    show_session_log: bool = typer.Option(
+        False, "--show-session_log", help="Show session log before response"
+    ),
+    params: List[str] = typer.Option(
+        [],
+        "--param",
+        "-p",
+        help="Parameters in format name=value (can be used multiple times)",
+    ),
+    verbose: bool = typer.Option(
+        False, "--verbose", "-v", help="Enable verbose logging"
+    ),
 ):
     _access_console_hadler(verbose)
 
@@ -78,14 +92,22 @@ def prompt(
                 else:
                     if value.isdigit():
                         kwargs[name] = int(value)
-                    elif all(c.isdigit() or c == "." for c in value) and value.count(".") <= 1:
+                    elif (
+                        all(c.isdigit() or c == "." for c in value)
+                        and value.count(".") <= 1
+                    ):
                         kwargs[name] = float(value)
                     else:
                         kwargs[name] = value
             except ValueError:
-                typer.echo(f"Invalid parameter format: {param}. Use name=value format.", err=True)
+                typer.echo(
+                    f"Invalid parameter format: {param}. Use name=value format.",
+                    err=True,
+                )
         response = ai.generate(text, **kwargs)
-        final_response, tool_use, resource_use = ai.evaluate_response(text, response, **kwargs)
+        final_response, tool_use, resource_use = ai.evaluate_response(
+            text, response, **kwargs
+        )
         prompt_log = (
             f"{final_response}\n"
             f"Tool usage: {tool_use}\n"
@@ -97,10 +119,13 @@ def prompt(
         typer.echo(f"Error: {e}", err=True)
         raise typer.Exit(1)
 
+
 @app.command()
 def status(
-    verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose logging"),
-    ):
+    verbose: bool = typer.Option(
+        False, "--verbose", "-v", help="Enable verbose logging"
+    ),
+):
     """Show current session status"""
 
     _access_console_hadler(verbose)
@@ -120,12 +145,15 @@ def status(
         typer.echo("No active session")
         typer.echo("Run 'PAI init <provider>' to create a session")
 
+
 @app.command()
 def reset(
-    verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose logging"),
-    ):
+    verbose: bool = typer.Option(
+        False, "--verbose", "-v", help="Enable verbose logging"
+    ),
+):
     """Close the current PAI session"""
-    
+
     _access_console_hadler(verbose)
 
     try:
@@ -135,12 +163,15 @@ def reset(
     except Exception as e:
         typer.echo(f"Failed to close session: {e}", err=True)
 
+
 @app.command()
 def test(
-    verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose logging"),
-    ):
+    verbose: bool = typer.Option(
+        False, "--verbose", "-v", help="Enable verbose logging"
+    ),
+):
     """Test the current session with a simple prompt"""
-    
+
     _access_console_hadler(verbose)
 
     try:
@@ -154,14 +185,17 @@ def test(
         typer.echo(f"Test failed: {e}", err=True)
         raise typer.Exit(1)
 
+
 @app.command()
 def providers(
-    verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose logging"),
-    ):
+    verbose: bool = typer.Option(
+        False, "--verbose", "-v", help="Enable verbose logging"
+    ),
+):
     """List available providers and their default models"""
-    
+
     _access_console_hadler(verbose)
-    
+
     providers = PAI.available_providers()
     typer.echo("Available Providers:")
     for provider in providers:

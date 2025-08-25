@@ -4,6 +4,7 @@ import datetime
 
 from PAI.utils.logger import logger
 
+
 class Resource(BaseModel):
     Name: str
     ID: str

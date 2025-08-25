@@ -1,7 +1,7 @@
 ﻿import os
 import json
 import re
-from datetime import datetime 
+from datetime import datetime
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 from .models.model_session import ModelSession
@@ -19,23 +19,30 @@ from .models.Anthropic_client import AnthropicClient
 from PAI.utils.logger import logger
 from PAI.utils.encrypt import encrypt_api_key, decrypt_api_key
 
+
 class PAI:
     """
     Unified interface for all AI model providers
     """
+
     def __init__(self, session_name):
         self.model_session = ModelSession()
         self.current_provider = None
         self.current_model = None
-        self.tool_enabled = True  # Q does implementation this mean I can't set this to false?
+        self.tool_enabled = (
+            True  # Q does implementation this mean I can't set this to false?
+        )
         self.resource_enabled = True
-        self.session_file = Path.home() / f".PAI/PAI_session_logs/PAI_session_log_{session_name}.json"
+        self.session_file = (
+            Path.home() / f".PAI/PAI_session_logs/PAI_session_log_{session_name}.json"
+        )
         self.context = ContentManager()
 
     def init_session(self, session_name, provider, model, api_key=None):
         try:
             from .tools import tool_store
             from .resources import resource_store
+
             logger.debug("Stores ran")
         except ImportError:
             logger.warning("Failed to import stores")
@@ -51,7 +58,7 @@ class PAI:
             "api_key": api_key,
             "tool_metadata": tool_list,
             "resource_metadata": resource_metadata,
-            "prompt_history": []
+            "prompt_history": [],
         }
         self.use_provider(provider, model=model, api_key=api_key)
 
@@ -72,7 +79,7 @@ class PAI:
         self.use_provider(
             self.session_log["provider"],
             model=self.session_log["model"],
-            api_key=self.session_log.get("api_key")
+            api_key=self.session_log.get("api_key"),
         )
 
     @classmethod
@@ -107,7 +114,9 @@ class PAI:
     def add_prompt(self, prompt, response):
         if "prompt_history" not in self.session_log:
             self.session_log["prompt_history"] = []
-        self.session_log["prompt_history"].append({"prompt": prompt, "response": response})
+        self.session_log["prompt_history"].append(
+            {"prompt": prompt, "response": response}
+        )
         self.save_session()
         logger.info("Prompt and response added to session log")
 
@@ -148,9 +157,13 @@ class PAI:
             Generated response string
         """
         if not self.model_session.provider:
-            logger.error("No provider initialized. Call use_openai(), use_anthropic(), etc. first.")
-            raise RuntimeError("No provider initialized. Call use_openai(), use_anthropic(), etc. first.")
-            
+            logger.error(
+                "No provider initialized. Call use_openai(), use_anthropic(), etc. first."
+            )
+            raise RuntimeError(
+                "No provider initialized. Call use_openai(), use_anthropic(), etc. first."
+            )
+
         if self.tool_enabled:
             prompt = prompt + self.context.create_prompt_context(self.session_log)
             logger.debug(f"Prompt with context: {prompt}")
@@ -215,7 +228,6 @@ class PAI:
 
         tool_results = self.call_tools(tool_calls)
 
-
         tool_results_json = json.dumps(tool_results, indent=2)
 
         resource_results = self.call_resources(request_calls)
@@ -226,7 +238,11 @@ class PAI:
             content = res.get("Content")
             if content:
                 resource_contents.append(content)
-        resource_contents_text = "\n".join(resource_contents) if resource_contents else "No resource content found."
+        resource_contents_text = (
+            "\n".join(resource_contents)
+            if resource_contents
+            else "No resource content found."
+        )
 
         new_prompt = f"""
          Here is the results from the tools you requested:
@@ -284,7 +300,7 @@ class PAI:
     def _extract_resouce_call(self, text: str):
         resource_calls = []
 
-        resource_label = "Request Resource(s):"  
+        resource_label = "Request Resource(s):"
         chunks = text.split(resource_label)[1:]
         for chunk in chunks:
             match = re.search(r'\{[\s\S]*?"Name"[\s\S]*?\}', chunk)
@@ -306,11 +322,13 @@ class PAI:
                     resource_calls.append(data)
             except json.JSONDecodeError:
                 continue
-        
+
         logger.debug(f"Resources extracted: {resource_calls}")
         return resource_calls
 
-    def reset(self,):
+    def reset(
+        self,
+    ):
         """Close the current PAI session and clear session data"""
         logger.info("Reset current session")
         self.session_log = None
@@ -331,8 +349,12 @@ class PAI:
         """Get current provider and model info"""
         logger.debug("Fetching session status")
         return {
-            "session_name": self.session_log.get("session_name") if self.session_log else None,
-            "session_start_dt": self.session_log.get("session_start_dt") if self.session_log else None,
+            "session_name": (
+                self.session_log.get("session_name") if self.session_log else None
+            ),
+            "session_start_dt": (
+                self.session_log.get("session_start_dt") if self.session_log else None
+            ),
             "provider": self.current_provider,
             "model": self.current_model,
             "initialized": self.model_session.provider is not None,
