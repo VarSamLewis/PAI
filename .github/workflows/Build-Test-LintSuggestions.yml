@@ -61,7 +61,7 @@ jobs:
 
     - name: Format code with black
       run: |
-        poetry run black . --exclude=.venv,build,dist 
+        poetry run black src
 
     - name: Build package
       run: |
