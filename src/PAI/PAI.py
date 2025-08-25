@@ -3,7 +3,7 @@ import json
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Tuple
 from .models.model_session import ModelSession
 from .models.model_registry import ProviderRegistry
 from .tools.tool_registry import ToolRegistry
@@ -111,11 +111,16 @@ class PAI:
 
         return ai
 
-    def add_prompt(self, prompt, response):
+    def add_prompt(self, prompt, response, tool_used, resource_used):
         if "prompt_history" not in self.session_log:
             self.session_log["prompt_history"] = []
         self.session_log["prompt_history"].append(
-            {"prompt": prompt, "response": response}
+            {
+                "prompt": prompt, 
+                "response": response, 
+                "resource_used": resource_used,
+                "tool_used": tool_used
+            }
         )
         self.save_session()
         logger.info("Prompt and response added to session log")
@@ -202,6 +207,70 @@ class PAI:
             logger.debug(f"Resource result: {results}")
 
         return results
+
+    
+    def generate_loop(
+        self,
+        prompt: str,
+        iterations: int = 3,
+        **kwargs,
+    ) -> Tuple[str, List[Dict[str, Any]], List[Dict[str, Any]]]:
+        """
+        Iterative planning/acting loop:
+        - Generate a response (plan or answer).
+        - Parse tool/resource requests.
+        - Execute tools/resources.
+        - Build the next prompt from results.
+        - Repeat up to `iterations` times or until no requests remain.
+
+        Returns:
+            (final_response, all_tools_used, all_resources_used)
+        """
+        if iterations < 1:
+            raise ValueError("iterations must be >= 1")
+
+        original_prompt = prompt
+        current_prompt = prompt
+
+        tools_used: List[Dict[str, Any]] = []
+        resources_used: List[Dict[str, Any]] = []
+
+        for step in range(iterations):
+
+            response = self.generate(current_prompt, **kwargs)
+            self.add_prompt(current_prompt, response, tools_used, resources_used)
+
+            tool_calls = self._extract_tool_calls(response)
+            resource_calls = self._extract_resouce_call(response)
+
+            if not tool_calls and not resource_calls:
+                logger.info(f"Iteration {step + 1}: no tool/resource requests; finishing.")
+                return response, tools_used, resources_used
+
+    
+            tool_results: List[Dict[str, Any]] = []
+            resource_results: List[Dict[str, Any]] = []
+
+            if self.tool_enabled and tool_calls:
+                tool_results = self.call_tools(tool_calls)
+                tools_used.extend(tool_calls)
+
+            if self.resource_enabled and resource_calls:
+                resource_results = self.call_resources(resource_calls)
+                resources_used.extend(resource_calls)
+
+
+            current_prompt = self.context.build_next_prompt(
+                original_prompt=original_prompt,
+                tool_results=tool_results,
+                resource_results=resource_results,
+            )
+
+        logger.info("Max iterations reached; attempting final answer.")
+        final_response = self.generate(current_prompt, **kwargs)
+        self.add_prompt(current_prompt, final_response, tools_used, resources_used)
+        return final_response
+
 
     def evaluate_response(self, original_prompt: str, response: str, **kwargs) -> str:
         """
