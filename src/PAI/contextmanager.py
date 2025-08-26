@@ -31,7 +31,7 @@ class ContentManager:
         Retrieve the metadata for available resources.
         """
         logger.debug("Attempting to get resource metadata.")
-        resource_metadata = ResourceRegistry.get_tool_metadata()
+        resource_metadata = ResourceRegistry.get_resource_metadata()
         self.resources_available = resource_metadata
         logger.info(f"Resource metadata retrieved: {resource_metadata}")
         return resource_metadata

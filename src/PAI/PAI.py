@@ -48,7 +48,7 @@ class PAI:
             logger.warning("Failed to import stores")
             pass
         tool_list = ToolRegistry.get_tools()
-        resource_metadata = ResourceRegistry.get_tool_metadata()
+        resource_metadata = ResourceRegistry.get_resource_metadata()
 
         self.session_log = {
             "session_name": session_name,
@@ -269,7 +269,7 @@ class PAI:
         logger.info("Max iterations reached; attempting final answer.")
         final_response = self.generate(current_prompt, **kwargs)
         self.add_prompt(current_prompt, final_response, tools_used, resources_used)
-        return final_response
+        return final_response, tools_used, resources_used
 
 
     def evaluate_response(self, original_prompt: str, response: str, **kwargs) -> str:
