@@ -7,7 +7,8 @@ A CLI personal assistant for everyday tasks. The goal is to give you control ove
 - Python 3.11 or newer
 - [Poetry](https://python-poetry.org/) installed
 - An API key for your chosen provider (currently OpenAI). For OpenAI, set `OPENAI_API_KEY` in your environment
-
+- An encryption key `PAI_ENCRYPTION_KEY` stored as an environment variable to ensure safe storage of api keys. See instructions below on how to generate.
+  
 ## Install Poetry
 
 The simplest way is the official installer.
@@ -35,7 +36,7 @@ poetry --version
 ## Get encryption keys
 PAI uses encryption to store sensitive data like API keys. 
 
-To generate an encryption key, run the following Python snippet and set this as the `PAI_ENCRYPTION_KEY` environment variable.
+To generate an encryption key, run the following Python snippet and set this as the `PAI_ENCRYPTION_KEY` environment variable. 
 
 ```python
 from cryptography.fernet import Fernet
@@ -214,11 +215,14 @@ Same as prompt but unbounded
 - [x] Add GitHub Actions CI/CD
 - [x] Ammend Build_and_Lint to use poetry build rather than requirements.txt
 - [ ] Review + refactor code
-- [ ] Obsfucate api keys in logs (if provided)
+- [x] Obsfucate api keys in logs (if provided)
+- [ ] Resource handling / RAG → Embed large resources for retrieval; read small ones directly.
+- [ ] Concurrency / file locks → Lock session log during writes with retries; reads safe.
+- [ ] Optional caching / daemon → Speed up repeated interactions; keep CLI stateless.
+- [ ] Zero-dependency packaging → Distribute as wheel or self-contained executable.
 
 ### Notes
-Model is being fed resources but doesn't reliablly read them
-Model always tries to read resources even when instructed not to
+
 
 ## Licence
 MIT
