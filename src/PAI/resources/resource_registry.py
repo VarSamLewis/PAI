@@ -17,8 +17,9 @@ class ResourceRegistry:
     def create_resource(
         cls,
         Name: str,
-        content: str,
         Description: str,
+        Content: Optional[str] = None,
+        content: Optional[str] = None,  # deprecated alias
         ContentType: Optional[str] = None,
         local_file: bool = False,
         Filetype: Optional[str] = None,
@@ -39,18 +40,23 @@ class ResourceRegistry:
 
             logger.info(f"Adding resource: {Name}")
 
+            # Normalize deprecated 'content' param to 'Content'
+            if Content is None and content is not None:
+                logger.warning("Parameter 'content' is deprecated. Use 'Content' instead.")
+                Content = content
+
             if ContentType:
-                content = cls._handle_content_type(content, ContentType, local_file)
+                Content = cls._handle_Content_type(Content or "", ContentType, local_file)
 
             resource_id = str(uuid.uuid4())
-            size = cls._get_resource_size(content)
+            size = cls._get_resource_size(Content or "")
 
             resource_entry = Resource(
                 Name=Name,
                 ID=resource_id,
                 Description=Description,
                 ContentType=ContentType,
-                Content=content,
+                Content=Content or "",
                 Size=size,
                 Filetype=Filetype,
                 Tags=Tags,
@@ -63,7 +69,7 @@ class ResourceRegistry:
             path = cls._prepare_path(path)
             path.parent.mkdir(parents=True, exist_ok=True)
 
-            with open(path, "w") as f:
+            with open(path, "w", encoding="utf-8") as f:
                 json.dump(resources, f, indent=2)
 
             logger.info(f"Resource '{Name}' (ID: {resource_id}) added successfully")
@@ -77,8 +83,9 @@ class ResourceRegistry:
     def update_resource(
         cls,
         Name: str,
-        content: str,
         Description: str,
+        Content: Optional[str] = None,
+        content: Optional[str] = None,  # deprecated alias
         ContentType: Optional[str] = None,
         local_file: bool = False,
         Filetype: Optional[str] = None,
@@ -91,10 +98,15 @@ class ResourceRegistry:
         resources_list = resources.get("resources", [])
         resource_found = False
 
-        if ContentType:
-            content = cls._handle_content_type(content, ContentType, local_file)
+        # Normalize deprecated 'content' param to 'Content'
+        if Content is None and content is not None:
+            logger.warning("Parameter 'content' is deprecated. Use 'Content' instead.")
+            Content = content
 
-        size = cls._get_resource_size(content)
+        if ContentType:
+            Content = cls._handle_Content_type(Content or "", ContentType, local_file)
+
+        size = cls._get_resource_size(Content or "")
 
         try:
             for i, resource in enumerate(resources_list):
@@ -105,7 +117,7 @@ class ResourceRegistry:
                     resources_list[i].update(
                         {
                             "Description": Description,
-                            "Content": content,
+                            "Content": Content or "",
                             "Size": size,
                             "LastModified": datetime.datetime.now().isoformat(),
                             "ContentType": (
@@ -127,12 +139,12 @@ class ResourceRegistry:
 
             if not resource_found:
                 logger.error(f"Resource not found with Name='{Name}'")
-                raise FileNotFoundError(f"Resource not found")
+                raise FileNotFoundError("Resource not found")
 
             path = cls._prepare_path(path)
             path.parent.mkdir(parents=True, exist_ok=True)
 
-            with open(path, "w") as f:
+            with open(path, "w", encoding="utf-8") as f:
                 json.dump(resources, f, indent=2)
                 logger.info(f"Resource '{Name}' updated successfully")
                 return updated_resource
@@ -164,7 +176,7 @@ class ResourceRegistry:
                 break
         if not resource_found:
             logger.error(f"Resource not found with Name='{Name}' ID='{ID}'")
-            raise FileNotFoundError(f"Resource not found")
+            raise FileNotFoundError("Resource not found")
 
         resources["resources"] = resources_list
 
@@ -173,7 +185,7 @@ class ResourceRegistry:
         try:
             path.parent.mkdir(parents=True, exist_ok=True)
 
-            with open(path, "w") as f:
+            with open(path, "w", encoding="utf-8") as f:
                 json.dump(resources, f, indent=2)
 
             logger.info(
@@ -196,13 +208,39 @@ class ResourceRegistry:
             if (Name and resource.get("Name") == Name) or (
                 ID and resource.get("ID") == ID
             ):
+                # Resolve linked content on read, if applicable
+                ct = resource.get("ContentType")
+                if isinstance(ct, str):
+                    ct_lower = ct.lower()
+                    if ct_lower in {"file", "url"}:
+                        original = resource.get("Content")
+                        try:
+                            is_local_file = False
+                            if ct_lower == "file":
+                                try:
+                                    p = Path(str(original))
+                                    is_local_file = p.exists() and p.is_file()
+                                except Exception:
+                                    is_local_file = False
+
+                            resolved = cls._handle_Content_type(
+                                original or "",
+                                ct,
+                                local_file=is_local_file,
+                            )
+                            resource["Content"] = resolved
+                        except Exception as e:
+                            logger.warning(
+                                f"Failed to resolve linked content for resource '{resource.get('Name')}': {e}"
+                            )
+
                 logger.info(
                     f"Resource found: {resource.get('Name')} (ID: {resource.get('ID')})"
                 )
                 return resource
 
         logger.error(f"Resource not found with Name='{Name}' ID='{ID}'")
-        raise FileNotFoundError(f"Resource not found")
+        raise FileNotFoundError("Resource not found")
 
     @classmethod
     def get_resources(
@@ -220,11 +258,11 @@ class ResourceRegistry:
             return resources
 
         try:
-            with open(path, "r") as f:
-                content = f.read().strip()
-                if content:
+            with open(path, "r", encoding="utf-8") as f:
+                content_text = f.read().strip()
+                if content_text:
                     try:
-                        resources_raw = json.loads(content)
+                        resources_raw = json.loads(content_text)
                         resources = ResourceCollection.model_validate(
                             resources_raw
                         ).model_dump()
@@ -250,8 +288,8 @@ class ResourceRegistry:
             raise
 
     @classmethod
-    def get_tool_metadata(cls, path: Optional[Path] = None) -> List[Dict[str, Any]]:
-        """Get metadata for all resources except their content."""
+    def get_resource_metadata(cls, path: Optional[Path] = None) -> List[Dict[str, Any]]:
+        """Get metadata for all resources except their Content."""
 
         resources = cls.get_resources(path)
 
@@ -285,50 +323,57 @@ class ResourceRegistry:
         return path
 
     @classmethod
-    def _get_resource_size(cls, content: str) -> float:
-        """Calculate the size of the resource content in megabytes."""
+    def _get_resource_size(cls, Content: str) -> float:
+        """Calculate the size of the resource Content in megabytes."""
 
-        if not content:
-            logger.debug("Empty content, returning size 0.0")
+        if not Content:
+            logger.debug("Empty Content, returning size 0.0")
             return 0.0
 
-        byte_size = len(content.encode("utf-8"))
+        byte_size = len(Content.encode("utf-8"))
         mb_size = byte_size / (1024 * 1024)
 
         logger.debug(f"Content size: {byte_size} bytes ({mb_size} MB)")
         return round(mb_size, 2)
 
     @classmethod
-    def _handle_content_type(
-        cls, content: str, ContentType: str, local_file: bool
+    def _handle_Content_type(
+        cls, Content: str, ContentType: str, local_file: bool
     ) -> str:
-        """Handle content based on its type and source."""
+        """Handle Content based on its type and source."""
+        if not isinstance(ContentType, str):
+            return Content
 
-        if ContentType.lower() == "file":
+        ct = ContentType.lower()
+
+        if ct == "file":
             if local_file:
                 try:
-                    logger.debug(f"Reading content from file: {content}")
-                    with open(Path(content), "r") as f:
-                        content = f.read()
+                    logger.debug(f"Reading Content from file: {Content}")
+                    with open(Path(Content), "r", encoding="utf-8") as f:
+                        Content = f.read()
                     logger.debug(
-                        f"File read successfully, content length: {len(content)}"
+                        f"File read successfully, Content length: {len(Content)}"
                     )
                 except FileNotFoundError:
-                    logger.error(f"File not found: {content}")
-                    raise FileNotFoundError(f"Resource file not found: {content}")
+                    logger.error(f"File not found: {Content}")
+                    raise FileNotFoundError(f"Resource file not found: {Content}")
                 except Exception as e:
-                    logger.error(f"Error reading file {content}: {e}")
+                    logger.error(f"Error reading file {Content}: {e}")
                     raise
-            if not local_file:
-                content = content
+            # Return original value (likely a path) when not local_file
+            return Content
 
-        return content
+        if ct == "url":
+            return cls._access_external_file(Content)
+
+        return Content
 
     @classmethod
     def _access_external_file(
         cls, path: str, credentials: Optional[Dict[str, Any]] = None
     ) -> str:
-        """Access and retrieve content from an external file or URL."""
+        """Access and retrieve Content from an external file or URL."""
         import requests
         from urllib.parse import urlparse
 
@@ -350,7 +395,7 @@ class ResourceRegistry:
                     if "token" in credentials:
                         headers["Authorization"] = f"Bearer {credentials['token']}"
 
-                response = requests.get(path, auth=auth, headers=headers)
+                response = requests.get(path, auth=auth, headers=headers, timeout=30)
                 response.raise_for_status()
                 return response.text
             else:

@@ -163,7 +163,7 @@ def test_resource_registry_get_toolmetadata_1(test_dir):
         Tags=["test", "metadata"],
     )
 
-    result = ResourceRegistry.get_tool_metadata()
+    result = ResourceRegistry.get_resource_metadata()
 
     assert result is not None
     assert len(result) == 1
