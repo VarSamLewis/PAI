@@ -1,22 +1,9 @@
 ﻿import typer
-from typing import Optional, List, Dict
-from pathlib import Path
+from typing import Optional, List
 from .PAI import PAI
-from .contextmanager import ContentManager
 import logging
 
 from PAI.utils.logger import logger
-
-"""
-def _access_console_hadler(verbose):
-    level = logging.DEBUG if verbose else logging.WARNING
-    logger.setLevel(level)
-    for handler in logger.handlers:
-        logger.setLevel(level)
-        if isinstance(handler, logging.StreamHandler):
-            handler.setLevel(level)
-            return handler
-"""
 
 
 def _access_console_hadler(verbose):
@@ -49,13 +36,38 @@ def init(
             )
             raise typer.Exit(1)
         ai.init_session(session_name, provider, model, api_key)
-        ai.save_session()
         typer.echo("Session initialized successfully!")
         typer.echo("\nNow you can use: PAI prompt 'Your question here'")
     except Exception as e:
         typer.echo(f"Failed to initialize session: {e}", err=True)
         raise typer.Exit(1)
 
+@app.command()
+def load(session_name: str = typer.Argument("default", help="Session name"),
+    provider: str = typer.Argument(..., help="AI provider (openai, anthropic, etc.)"),
+    model: str = typer.Option(None, "--model", "-m", help="Model to use"),
+    api_key: Optional[str] = typer.Option(None, "--api-key", help="API key"),
+    verbose: bool = typer.Option(
+        False, "--verbose", "-v", help="Enable verbose logging"
+    ),
+):
+    _access_console_hadler(verbose)
+
+    try:
+        ai = PAI(session_name)
+        available_providers = PAI.available_providers()
+        if provider not in available_providers:
+            typer.echo(
+                f"Provider '{provider}' not supported. Available providers: {', '.join(available_providers)}",
+                err=True,
+            )
+            raise typer.Exit(1)
+        ai.load_session(session_name, provider, model, api_key)
+        typer.echo("Session loaded successfully!")
+        typer.echo("\nNow you can use: PAI prompt 'Your question here'")
+    except Exception as e:
+        typer.echo(f"Failed to load session: {e}", err=True)
+        raise typer.Exit(1)
 
 @app.command()
 def prompt(
@@ -79,7 +91,8 @@ def prompt(
 
     try:
         ai = PAI(session_name)
-        ai.load_session()
+        ai.get_session_log()
+        ai.recreate_session()
         if show_session_log:
             typer.echo(f"Using: {ai.current_provider} ({ai.current_model})")
         kwargs = {}
@@ -110,7 +123,6 @@ def prompt(
             text, iterations=iterations, **kwargs
             )
 
-        #ai.add_prompt(text, prompt_log)
         typer.echo(f"{final_response}")
     except Exception as e:
         typer.echo(f"Error: {e}", err=True)
@@ -129,7 +141,8 @@ def status(
 
     try:
         ai = PAI()
-        ai.load_session()
+        ai.get_session_log()
+        ai.recreate_session()
         session_status = ai.status()
         typer.echo("Current Session:")
         typer.echo(f"   Provider: {session_status['provider']}")
@@ -144,25 +157,8 @@ def status(
 
 
 @app.command()
-def reset(
-    verbose: bool = typer.Option(
-        False, "--verbose", "-v", help="Enable verbose logging"
-    ),
-):
-    """Close the current PAI session"""
-
-    _access_console_hadler(verbose)
-
-    try:
-        ai = PAI()
-        ai.reset()
-        typer.echo("Session closed.")
-    except Exception as e:
-        typer.echo(f"Failed to close session: {e}", err=True)
-
-
-@app.command()
 def test(
+    session_name: str = typer.Argument("default", help="Session name"),
     verbose: bool = typer.Option(
         False, "--verbose", "-v", help="Enable verbose logging"
     ),
@@ -172,8 +168,9 @@ def test(
     _access_console_hadler(verbose)
 
     try:
-        ai = PAI()
-        ai.load_session()
+        ai = PAI(session_name)
+        ai.get_session_log()
+        ai.recreate_session()
         typer.echo(f"Testing {ai.current_provider} ({ai.current_model})...")
         response = ai.generate("Say Hi")
         typer.echo(f"Session working!")
@@ -185,6 +182,7 @@ def test(
 
 @app.command()
 def providers(
+    session_name: str = typer.Argument("default", help="Session name"),
     verbose: bool = typer.Option(
         False, "--verbose", "-v", help="Enable verbose logging"
     ),

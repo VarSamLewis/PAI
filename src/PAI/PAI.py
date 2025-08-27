@@ -38,7 +38,9 @@ class PAI:
         )
         self.context = ContentManager()
 
+
     def init_session(self, session_name, provider, model, api_key=None):
+        """Initialise session"""
         try:
             from .tools import tool_store
             from .resources import resource_store
@@ -52,78 +54,126 @@ class PAI:
 
         self.session_log = {
             "session_name": session_name,
+            "session_instance": [
+                {  
+                    "session_start_dt": datetime.utcnow().isoformat() + "Z",
+                    "provider": provider,
+                    "model": model,
+                    "api_key": api_key,
+                    "tool_metadata": tool_list,
+                    "resource_metadata": resource_metadata,
+                    "prompt_history": [],
+                }  
+            ],
+        }
+
+        logger.debug("")
+
+        self.save_session()
+
+
+    def load_session(self, session_name, provider: str = None, model: str = None, api_key=None):
+        """ """
+        self.get_session_log()
+        prev = self.session_log["session_instance"][-1]
+        session_name_val = self.session_log["session_name"]
+
+        tool_list = ToolRegistry.get_tools()
+        resource_metadata = ResourceRegistry.get_resource_metadata()
+        new_instance = {
             "session_start_dt": datetime.utcnow().isoformat() + "Z",
-            "provider": provider,
-            "model": model,
-            "api_key": api_key,
+            "provider": provider if provider is not None else prev.get("provider"),
+            "model": model if model is not None else prev.get("model"),
+            "api_key": api_key if api_key is not None else prev.get("api_key"),
             "tool_metadata": tool_list,
             "resource_metadata": resource_metadata,
             "prompt_history": [],
         }
-        self.use_provider(provider, model=model, api_key=api_key)
+
+        self.session_log = {
+            "session_name": session_name_val,
+            "session_instance": [new_instance],
+        }
+
+        self.recreate_session()
+        self.save_session()
+           
 
     def save_session(self):
-        if self.session_log.get("api_key"):
-            self.session_log["api_key"] = encrypt_api_key(self.session_log["api_key"])
+        """Save current session to file if empty overwrite, if populated append."""
+        if not self.session_log or "session_instance" not in self.session_log:
+            raise ValueError("session_log is not initialized")
+
+        latest_inst = dict(self.session_log["session_instance"][-1])
+        if latest_inst.get("api_key") and latest_inst["api_key"] != "ENV_VAR":
+            latest_inst["api_key"] = encrypt_api_key(latest_inst["api_key"])
+
+        if not self.session_file.exists():
+            write_log = {
+                "session_name": self.session_log["session_name"],
+                "session_instance": [latest_inst],
+            }
+            self.session_file.parent.mkdir(parents=True, exist_ok=True)
+            with open(self.session_file, "w") as f:
+                json.dump(write_log, f, indent=2)
+            logger.info(f"Session data saved: {self.session_file}")
+            return
+
+        with open(self.session_file, "r") as f:
+            existing_data = json.load(f)
+
+        existing_data.setdefault("session_instance", []).append(latest_inst)
+
         self.session_file.parent.mkdir(parents=True, exist_ok=True)
         with open(self.session_file, "w") as f:
-            json.dump(self.session_log, f, indent=2)
-            logger.info(f"Session data saved: {self.session_file}")
+            json.dump(existing_data, f, indent=2)
+        logger.info(f"Session instance appended to: {self.session_file}")
 
-    def load_session(self):
-        """Load existing session from file"""
+
+    def get_session_log(self):
+        """Load existing session from file and normalize self.session_log."""
         with open(self.session_file, "r") as f:
-            self.session_log = json.load(f)
-        if self.session_log.get("api_key"):
-            self.session_log["api_key"] = decrypt_api_key(self.session_log["api_key"])
+            entire_session = json.load(f)
+
+        session_instances = entire_session.get("session_instance", [])
+        if not session_instances:
+            raise ValueError("No session instances found in session log.")
+
+        latest = dict(session_instances[-1])
+        if latest.get("api_key") and latest["api_key"] != "ENV_VAR":
+            latest["api_key"] = decrypt_api_key(latest["api_key"])
+
+        self.session_log = {
+            "session_name": entire_session["session_name"],
+            "session_instance": [latest],
+        }
+        return self.session_log
+    
+
+    def recreate_session(self):
+        """Recreate session from the latest session instance."""
+        latest = self.session_log["session_instance"][-1]
         self.use_provider(
-            self.session_log["provider"],
-            model=self.session_log["model"],
-            api_key=self.session_log.get("api_key"),
+            latest["provider"],
+            model=latest["model"],
+            api_key=latest.get("api_key"),
         )
 
-    @classmethod
-    def get_session_log(self):
-        """Load existing session log from file"""
-        with open(self.session_file, "r") as f:
-            current_session_file = json.load(f)
-            logger.debug(f"Session data loaded: {self.session_file}")
-        return current_session_file
-
-    @classmethod
-    def create_ai_from_session_log(cls, session_file: Optional[Path] = None) -> "PAI":
-        """Create PAI instance from saved session_loguration"""
-        if session_file is None:
-            session_file = cls.session_file
-
-        session_log = cls.get_session_log()
-
-        ai = cls()
-        provider = session_log["provider"]
-        model = session_log["model"]
-        api_key = session_log.get("api_key")
-
-        kwargs = {"model": model}
-        if api_key:
-            kwargs["api_key"] = api_key
-
-        ai.use_provider(provider, **kwargs)
-
-        return ai
 
     def add_prompt(self, prompt, response, tool_used, resource_used):
-        if "prompt_history" not in self.session_log:
-            self.session_log["prompt_history"] = []
-        self.session_log["prompt_history"].append(
+        latest = self.session_log["session_instance"][-1]
+        latest.setdefault("prompt_history", [])
+        latest["prompt_history"].append(
             {
-                "prompt": prompt, 
-                "response": response, 
+                "prompt": prompt,
+                "response": response,
                 "resource_used": resource_used,
-                "tool_used": tool_used
+                "tool_used": tool_used,
             }
         )
         self.save_session()
         logger.info("Prompt and response added to session log")
+
 
     def use_provider(self, provider: str, **kwargs) -> "PAI":
         """
@@ -170,7 +220,7 @@ class PAI:
             )
 
         if self.tool_enabled:
-            prompt = prompt + self.context.create_prompt_context(self.session_log)
+            prompt = prompt + "\n" + self.context.create_prompt_context(self.session_log)
             logger.debug(f"Prompt with context: {prompt}")
         return self.model_session.generate(prompt, **kwargs)
 
@@ -394,16 +444,6 @@ class PAI:
 
         logger.debug(f"Resources extracted: {resource_calls}")
         return resource_calls
-
-    def reset(
-        self,
-    ):
-        """Close the current PAI session and clear session data"""
-        logger.info("Reset current session")
-        self.session_log = None
-        self.session_active = False
-        self.current_provider = None
-        self.current_model = None
 
     @classmethod
     def available_providers(cls) -> List[str]:
