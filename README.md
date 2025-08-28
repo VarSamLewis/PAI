@@ -195,7 +195,6 @@ Same as prompt but unbounded
 #### Audit, Security
 - [x] Log all prompts, tool calls, resource accesses, model responses
 - [x] Include metadata: who, when, model/provider, token usage
-- [ ] Session constraints (tools, resources available)
 - [x] Ensure audit logs are secure and queryable (check where is the best place to store them)
 - [ ] Validation steps
 - [ ] Security review

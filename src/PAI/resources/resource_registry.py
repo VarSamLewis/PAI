@@ -19,7 +19,6 @@ class ResourceRegistry:
         Name: str,
         Description: str,
         Content: Optional[str] = None,
-        content: Optional[str] = None,  # deprecated alias
         ContentType: Optional[str] = None,
         local_file: bool = False,
         Filetype: Optional[str] = None,
@@ -40,10 +39,6 @@ class ResourceRegistry:
 
             logger.info(f"Adding resource: {Name}")
 
-            # Normalize deprecated 'content' param to 'Content'
-            if Content is None and content is not None:
-                logger.warning("Parameter 'content' is deprecated. Use 'Content' instead.")
-                Content = content
 
             if ContentType:
                 Content = cls._handle_Content_type(Content or "", ContentType, local_file)
@@ -85,7 +80,6 @@ class ResourceRegistry:
         Name: str,
         Description: str,
         Content: Optional[str] = None,
-        content: Optional[str] = None,  # deprecated alias
         ContentType: Optional[str] = None,
         local_file: bool = False,
         Filetype: Optional[str] = None,
@@ -97,11 +91,6 @@ class ResourceRegistry:
         resources = cls.get_resources(path)
         resources_list = resources.get("resources", [])
         resource_found = False
-
-        # Normalize deprecated 'content' param to 'Content'
-        if Content is None and content is not None:
-            logger.warning("Parameter 'content' is deprecated. Use 'Content' instead.")
-            Content = content
 
         if ContentType:
             Content = cls._handle_Content_type(Content or "", ContentType, local_file)
