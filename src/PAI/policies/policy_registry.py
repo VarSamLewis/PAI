@@ -32,7 +32,7 @@ class PolicyRegistry:
 
             policy_entry = {
                 "Policy_Name": Name,
-                "Policy_ID": _gen_test_identity(),
+                "Policy_ID": None,
                 "Description": Description,
                 "Policy_Type": Policy_Type,
                 "Regex": Regex if Regex is not None else None,
