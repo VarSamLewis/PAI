@@ -221,6 +221,7 @@ Same as prompt but unbounded
 - [ ] Zero-dependency packaging → Distribute as wheel or self-contained executable.
 
 ### Notes
+Think about creating a DSL for tool calling, resource acces and softt policy instructions. 
 
 ## Licence
 MIT

@@ -29,6 +29,12 @@ An extensible tool registry allows AI models to execute predefined functions, en
 ### Resource Management
 A comprehensive resource system enables AI models to access and utilize external data. Resources can be files, strings, or external data sources, with metadata tracking for efficient retrieval. The system supports CRUD operations and maintains resource versioning with modification timestamps.
 
+### Policy Management
+Policies refers to rules that coinstrain AI behaviour, what data is sent to the model, what tools can be used, and what resources can be accessed. A policy manager scans prompts and tool/resource requests to ensure compliance with defined safety and usage rules.
+There are 2 types of policies: 
+- **Hard:** must be complied with, e.g. no access to certain tools or resources, enforced by scanning prompts, tool and resource requests. 
+- **Soft:** instructions handed to the model as part of the prompt, e.g. "be concise", "avoid speculation"
+
 ### Security and Privacy Features
 
 - **Encryption**: API keys are encrypted using Fernet symmetric encryption before storage
@@ -60,7 +66,7 @@ The architecture prioritizes extensibility through:
 - Modular design allowing component replacement without system-wide changes
 
 ### User Experience
-Despite its sophisticated capabilities, PAI maintains a simple, intuitive command-line interface. Users can accomplish most tasks with straightforward commands while having access to advanced features through optional parameters.
+PAI maintains a simple, intuitive command-line interface. Users can accomplish most tasks with straightforward commands while having access to advanced features through optional parameters.
 
 ## Future Direction and Roadmap
 
