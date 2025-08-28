@@ -1,5 +1,4 @@
 import json
-import logging
 from typing import Dict, Any, Optional, List
 from .tools.tool_registry import ToolRegistry
 from .resources.resource_registry import ResourceRegistry
@@ -39,25 +38,39 @@ class ContentManager:
     def create_prompt_context(self, session_log: dict) -> str:
         """
         Create a meta prompt context string including available tools and resources.
+        Reads from the latest session_instance.
+        Skips the banner if both lists are empty.
         """
         logger.debug("Creating prompt context.")
 
-        if session_log:
-            tool_list = session_log.get("tool_metadata", [])
-            resource_metadata = session_log.get("resource_metadata", [])
+        tool_list: List[Dict[str, Any]] = []
+        resource_metadata: List[Dict[str, Any]] = []
+
+        if session_log and session_log.get("session_instance"):
+            inst = session_log["session_instance"][-1]
+            tool_list = inst.get("tool_metadata", []) or []
+            resource_metadata = inst.get("resource_metadata", []) or []
         else:
-            tool_list = self.get_tool_list()
-            resource_metadata = self.get_resource_metadata()
+            tool_list = self.get_tool_list() or []
+            resource_metadata = self.get_resource_metadata() or []
+
+        # If nothing available, don't add a banner; let the model answer normally
+        if not tool_list and not resource_metadata:
+            self.meta_prompt = ""
+            return ""
 
         meta_prompt_text = f"""
-            Capabilities banner (tools/resources available this session):
+Capabilities banner (tools/resources available this session):
+- If the user's request doesn't need tools/resources, answer directly and concisely.
+- Only request tools/resources when strictly needed.
+- Once you have enough information, provide a final answer without further requests.
 
-        TOOLS:
-        {json.dumps(tool_list, indent=2)}
+TOOLS:
+{json.dumps(tool_list, indent=2)}
 
-        RESOURCES:
-        {json.dumps(resource_metadata, indent=2)}
-        """.strip()
+RESOURCES:
+{json.dumps(resource_metadata, indent=2)}
+""".strip()
 
         self.meta_prompt = meta_prompt_text
         logger.info("Meta prompt context created.")
@@ -92,18 +105,18 @@ class ContentManager:
         )
 
         next_prompt = f"""
-        You are given tool execution results and resource contents. Use these to proceed to formulate .
+You are given tool execution results and resource contents. Use these to proceed.
 
-        Tool results:
-        {tool_results_json}
+Tool results:
+{tool_results_json}
 
-        Resource contents:
-        {resource_contents_text}
+Resource contents:
+{resource_contents_text}
 
-        If you still need more tools or resources, provide JSON blocks per the protocol and no prose. 
-        Otherwise, provide the best final answer based strictly on the above. 
-        Original question: {original_prompt}
-        """.strip()
+If you still need more tools or resources, provide ONLY the JSON request(s) per protocol and no prose.
+Otherwise, provide the best final answer based strictly on the above.
+Original question: {original_prompt}
+""".strip()
 
         logger.info("Next prompt constructed for iterative step.")
         return next_prompt
