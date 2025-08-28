@@ -8,7 +8,7 @@ from .models.model_session import ModelSession
 from .models.model_registry import ProviderRegistry
 from .tools.tool_registry import ToolRegistry
 from .resources.resource_registry import ResourceRegistry
-from .contextmanager import ContentManager
+from .contextmanager import ContextManager
 from .models.OpenAI_client import OpenAIClient
 from .models.Anthropic_client import AnthropicClient
 
@@ -36,7 +36,7 @@ class PAI:
         self.session_file = (
             Path.home() / f".PAI/PAI_session_logs/PAI_session_log_{session_name}.json"
         )
-        self.context = ContentManager()
+        self.context = ContextManager()
 
 
     def init_session(self, session_name, provider, model, api_key=None):

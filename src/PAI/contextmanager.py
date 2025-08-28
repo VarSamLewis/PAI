@@ -6,7 +6,7 @@ from .resources.resource_registry import ResourceRegistry
 from PAI.utils.logger import logger
 
 
-class ContentManager:
+class ContextManager:
     def __init__(self) -> None:
         self.tools_available: Optional[List[Dict[str, Any]]] = None
         self.resources_available: Optional[List[Dict[str, Any]]] = None
