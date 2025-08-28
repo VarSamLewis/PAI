@@ -35,7 +35,7 @@ def test_resource_registry_create_resource_1(test_dir):
     """Test creating a new resource successfully"""
     result = ResourceRegistry.create_resource(
         Name="new_resource",
-        content="Test content",
+        Content="Test content",
         Description="Test description",
         ContentType="text",
     )
