@@ -188,26 +188,25 @@ Same as prompt but unbounded
 #### Tool Management
 - [x] Expose tool register to model using context manager
 - [ ] Add more tools (file system, web scraping, API calls, database access)
-- [ ] Implement loop for sucessive tool chaining (include cli optional parameter to limit number for prompt mode)
+- [x] Implement loop for sucessive tool chaining (include cli optional parameter to limit number for prompt mode)
 - [ ] Fix extract tool method
 
 
 #### Audit, Security
 - [x] Log all prompts, tool calls, resource accesses, model responses
-- [×] Include metadata: who, when, model/provider, token usage
+- [x] Include metadata: who, when, model/provider, token usage
 - [ ] Session constraints (tools, resources available)
-- [ ] Ensure audit logs are secure and queryable (check where is the best place to store them)
+- [x] Ensure audit logs are secure and queryable (check where is the best place to store them)
 - [ ] Validation steps
 - [ ] Security review
 - [ ] Safe mode (enhanced permissions, policy layer)
 
 #### Model Provider Management
 - [ ] Add more model providers (Ollama, LM Studio, local models)
-- [ ] Function in PAI to switch models in a session
+- [x] Function in PAI to switch models in a session
 - [ ] Multi model for agent and assistant mode 
 
 #### Misc Functionality
-- [ ] Implement out-of-session commands (quick prompts without session init, limited functionality)
 
 #### Engineering Good Practice
 - [x] Add unit tests + integration tests
@@ -222,7 +221,6 @@ Same as prompt but unbounded
 - [ ] Zero-dependency packaging → Distribute as wheel or self-contained executable.
 
 ### Notes
-
 
 ## Licence
 MIT
