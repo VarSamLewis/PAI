@@ -8,7 +8,7 @@ A CLI personal assistant for everyday tasks. The goal is to give you control ove
 - [Poetry](https://python-poetry.org/) installed
 - An API key for your chosen provider (currently OpenAI). For OpenAI, set `OPENAI_API_KEY` in your environment
 - An encryption key `PAI_ENCRYPTION_KEY` stored as an environment variable to ensure safe storage of api keys. See instructions below on how to generate.
-  
+
 ## Install Poetry
 
 The simplest way is the official installer.
@@ -34,9 +34,9 @@ poetry --version
 ```
 
 ## Get encryption keys
-PAI uses encryption to store sensitive data like API keys. 
+PAI uses encryption to store sensitive data like API keys.
 
-To generate an encryption key, run the following Python snippet and set this as the `PAI_ENCRYPTION_KEY` environment variable. 
+To generate an encryption key, run the following Python snippet and set this as the `PAI_ENCRYPTION_KEY` environment variable.
 
 ```python
 from cryptography.fernet import Fernet
@@ -73,9 +73,9 @@ PAI supports two ways to provide API keys for model providers:
    - The encryption key must be set as the `PAI_ENCRYPTION_KEY` environment variable.
    - When loading a session, the API key is decrypted and used for provider authentication.
 
-**Security Note:**  
-API keys stored in session files are always encrypted and are stored outside of the git repo in your home directly (can be ammended but is not recommended). 
-For maximum security, prefer environment variables and avoid sharing session files containing sensitive information. 
+**Security Note:**
+API keys stored in session files are always encrypted and are stored outside of the git repo in your home directly (can be ammended but is not recommended).
+For maximum security, prefer environment variables and avoid sharing session files containing sensitive information.
 
 
 Mac/Linux (bash/zsh):
@@ -156,13 +156,13 @@ poetry run pytest
 - **Audit**: Log prompts, responses, resource/tool usage; track token budget.
 
 #### 3. Agent Mode
-Same as prompt but unbounded 
+Same as prompt but unbounded
 
 ### To-Do
 
 #### Context Management
 - [x] Build context manager as a single interface for tools and resources
-- [x] Implement contextmanager prompt in PAI.generate 
+- [x] Implement contextmanager prompt in PAI.generate
 - [x] Build session-level context manager (contains chat history, clears on reset)
 - [x] Implement PromptMode context (resource usage, limited reprompts)
 - [ ] Implement tool/ resource caching in context manager (Maybe not, limiting tokens might be more important than compute)
@@ -178,11 +178,11 @@ Same as prompt but unbounded
 - [ ] Refactor resource strategy for very large resources repositories.  (We currently read all resources into memeory in order to avoid duplication and find resources, solve when I get round to it)
 - [ ] Implement resource request API for LLM/tool usage (for things like external S3 buckets)
 - [ ] Define resource interaction with  llm per running mode (chat, prompt, agent)
-- [ ] Fix extract resource 
+- [ ] Fix extract resource
 
 #### Policy Management
 - [ ] Create policy manager (similar to tool manager, scan prompts for policy adherence)
-- [ ] Enforce tool/resource safety via policy rules 
+- [ ] Enforce tool/resource safety via policy rules
 - [ ] Conduct security review (permissions, sandboxing, policy validation)
 
 #### Tool Management
@@ -204,9 +204,10 @@ Same as prompt but unbounded
 #### Model Provider Management
 - [ ] Add more model providers (Ollama, LM Studio, local models)
 - [x] Function in PAI to switch models in a session
-- [ ] Multi model for agent and assistant mode 
+- [ ] Multi model for agent and assistant mode
 
 #### Misc Functionality
+- [x] Make it pretty (see **UX patterns for CLI tools**)
 
 #### Engineering Good Practice
 - [x] Add unit tests + integration tests
@@ -221,7 +222,7 @@ Same as prompt but unbounded
 - [ ] Zero-dependency packaging → Distribute as wheel or self-contained executable.
 
 ### Notes
-Think about creating a DSL for tool calling, resource acces and softt policy instructions. 
+Think about creating a DSL for tool calling, resource acces and softt policy instructions.
 
 ## Licence
 MIT
