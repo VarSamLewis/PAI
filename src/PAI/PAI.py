@@ -1,9 +1,9 @@
-﻿import os
-import json
+﻿import json
 import re
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, Dict, Any, List, Tuple
+from requests import HTTPError, ConnectionError, Timeout
 from .models.model_session import ModelSession
 from .models.model_registry import ProviderRegistry
 from .tools.tool_registry import ToolRegistry
@@ -11,6 +11,7 @@ from .resources.resource_registry import ResourceRegistry
 from .contextmanager import ContextManager
 from .models.OpenAI_client import OpenAIClient
 from .models.Anthropic_client import AnthropicClient
+
 
 # Add more imports as you create providers:
 # from .models.huggingface_client import HuggingFaceClient
@@ -30,7 +31,7 @@ class PAI:
         self.current_provider = None
         self.current_model = None
         self.tool_enabled = (
-            True  # Q does implementation this mean I can't set this to false?
+            True  
         )
         self.resource_enabled = True
         self.session_file = (
@@ -222,6 +223,7 @@ class PAI:
         if self.tool_enabled:
             prompt = prompt + "\n" + self.context.create_prompt_context(self.session_log)
             logger.debug(f"Prompt with context: {prompt}")
+
         return self.model_session.generate(prompt, **kwargs)
 
     def call_tools(self, tool_list: Dict[str, Any]) -> Dict[str, Any]:
@@ -317,7 +319,20 @@ class PAI:
             )
 
         logger.info("Max iterations reached; attempting final answer.")
-        final_response = self.generate(current_prompt, **kwargs)
+        try:
+            final_response = self.generate(current_prompt, **kwargs)
+            logger.info(f"Final response generated: {final_response}")
+        except Timeout:
+            logger.error("Request timed out.")
+        except ConnectionError:
+            logger.error("Connection failed.")
+        except HTTPError as e:
+            logger.error(f"HTTP error: {e}")
+        except ValueError:
+            logger.error("Invalid JSON response.")
+        except Exception as e:
+            logger.error(f"Error generating final response: {e}")
+
         self.add_prompt(current_prompt, final_response, tools_used, resources_used)
         return final_response, tools_used, resources_used
 

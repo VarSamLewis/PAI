@@ -205,6 +205,7 @@ Same as prompt but unbounded
 - [ ] Add more model providers (Ollama, LM Studio, local models)
 - [x] Function in PAI to switch models in a session
 - [ ] Multi model for agent and assistant mode 
+- [ ] Add retry and wait logic for rate limit handling
 
 #### Misc Functionality
 
