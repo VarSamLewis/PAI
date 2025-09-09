@@ -175,7 +175,7 @@ Same as prompt but unbounded
 - [x] Expose resource metadata to model using context manager
 - [x] Add resource interactions (CRUD operations)
 - [x] Implement resource retrieval
-- [ ] Refactor resource strategy for very large resources repositories.  (We currently read all resources into memeory in order to avoid duplication and find resources, solve when I get round to it)
+- [ ] Refactor resource strategy for very large resources repositories. (We currently read all resources into memeory in order to avoid duplication and find resources, solve when I get round to it)
 - [ ] Implement resource request API for LLM/tool usage (for things like external S3 buckets)
 - [ ] Define resource interaction with  llm per running mode (chat, prompt, agent)
 - [ ] Fix extract resource
@@ -204,7 +204,6 @@ Same as prompt but unbounded
 #### Model Provider Management
 - [ ] Add more model providers (Ollama, LM Studio, local models)
 - [x] Function in PAI to switch models in a session
-- [ ] Multi model for agent and assistant mode
 
 #### Misc Functionality
 - [x] Make it pretty (see **UX patterns for CLI tools**)

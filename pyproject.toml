@@ -17,6 +17,7 @@ typer = ">=0.12"
 openai = ">=1.0"
 anthropic = ">=0.64.0"
 cryptography = ">=41.0.3"
+requests = ">=2.31.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"
