@@ -1,4 +1,4 @@
-from typing import Dict, Optional, List, Any
+﻿from typing import Dict, Optional, List, Any
 from pathlib import Path
 import json
 from datetime import datetime
@@ -39,12 +39,12 @@ class PolicyRegistry:
                 "Instructions": Instructions if Instructions is not None else None, 
                 "Ruleset_Name": Ruleset_Name if Ruleset_Name is not None else None,  
                 "Ruleset_ID": Ruleset_Name if Ruleset_Name is not None else None,
-                "LastModifiedDT": datetime
+                "LastModified": datetime
             }
 
-            policies = cls.get_policies(path)
+            policies = cls._get_policies(path)
 
-            policies.setdefault("resources", []).append(policy_entry)
+            policies.setdefault("policies", []).append(policy_entry)
 
             path = cls._prepare_path(path)
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -60,6 +60,101 @@ class PolicyRegistry:
             return None
 
     @classmethod
+    def update_policy(
+        cls,
+        Name: str,
+        Description: str = None,
+        Regex: Optional[str] = None,
+        Instructions: Optional[str] = None,
+        Ruleset_Name: Optional[List[Dict[str, Any]]] = None,
+        Ruleset_ID: Optional[List[int]] = None,
+        path: Optional[Path] = None,
+        ):
+
+        policies = cls._get_policies(path)
+        policies_list = policies.get("policies", [])
+        policy_found = False
+
+        try:
+            for i, policies in enumerate(policies_list):
+                if policies.get("Name") == Name:
+                    logger.info(f"Policies found: {Name} (ID: {policies.get('ID')})")
+                    policy_found = True
+
+                    policies_list[i].update(
+                        {
+                            "Description": Description,
+                            "Regex": Regex,
+                            "Instructions": Instructions,
+                            "Ruleset_Name": Ruleset_Name,
+                            "Ruleset_ID": Ruleset_ID,
+                            "LastModified": datetime,
+            
+                        }
+                    )
+
+                    updated_policies = policies_list[i]
+                    break
+
+            if not policy_found:
+                logger.error(f"Policy not found with Name='{Name}'")
+                raise FileNotFoundError("Policy not found")
+
+            path = cls._prepare_path(path)
+            path.parent.mkdir(parents=True, exist_ok=True)
+
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(policies, f, indent=2)
+                logger.info(f"Policy '{Name}' updated successfully")
+                return updated_policies
+
+        except Exception as e:
+            logger.error(f"Error updating policy '{Name}': {e}")
+            raise
+
+    @classmethod
+    def delete_policy(
+        cls, Name: str, path: Optional[Path] = None
+    ) -> bool:
+        """Delete a specific policy by name."""
+
+        policies = cls.get_policies(path)
+        policies_list = policies.get("policies", [])
+        initial_count = len(policies_list)
+        policy_found = False
+
+        for i, policy in enumerate(policies_list):
+            if Name and policy.get("Name") == Name:
+                logger.info(
+                    f"Resource found: {policy.get('Name')} (ID: {policy.get('ID')})"
+                )
+                policies_list.pop(i)
+                policy_found = True
+                break
+
+        if not policy_found:
+            logger.error(f"Policy not found with Name='{Name}'")
+            raise FileNotFoundError("Policy not found")
+
+        policies["policies"] = policies_list
+
+        path = cls._prepare_path(path)
+
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(policies, f, indent=2)
+
+            logger.info(
+                f"Resource deleted successfully. Policies count: {initial_count} → {len(policies_list)}"
+            )
+            return True
+        except Exception as e:
+            logger.error(f"Error saving Policies after deletion: {e}")
+            raise
+
+    @classmethod
     def _prepare_path(cls, path: Optional[Path] = None) -> Path:
         """Prepare and return the path to the policies registry file."""
 
@@ -71,19 +166,19 @@ class PolicyRegistry:
         return path
 
     @classmethod
-    def get_policies(
+    def _get_policies(
         cls, path: Optional[Path] = None
     ) -> Dict[str, List[Dict[str, Any]]]:
-        """Return all resources from the registry."""
+        """Return all policies from the registry."""
 
         path = cls._prepare_path(path)
-        resources = {"resources": []}
+        policies = {"policies": []}
 
         if not path.exists():
             logger.debug(
-                f"Resources file not found at {path}, returning empty resources"
+                f"Resources file not found at {path}, returning empty policies"
             )
-            return resources
+            return policies
 
         try:
             with open(path, "r", encoding="utf-8") as f:
