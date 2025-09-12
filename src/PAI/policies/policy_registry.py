@@ -41,12 +41,12 @@ class PolicyRegistry:
                 "Ruleset_ID": Ruleset_Name if Ruleset_Name is not None else None,
                 "LastModified": datetime
             }
-
-            policies = cls._get_policies(path)
+            path = cls._prepare_path(path)
+            policies = cls.get_policies(path)
 
             policies.setdefault("policies", []).append(policy_entry)
 
-            path = cls._prepare_path(path)
+
             path.parent.mkdir(parents=True, exist_ok=True)
 
             with open(path, "w", encoding="utf-8") as f:
@@ -71,7 +71,8 @@ class PolicyRegistry:
         path: Optional[Path] = None,
         ):
 
-        policies = cls._get_policies(path)
+        path = cls._prepare_path(path)
+        policies = cls.get_policies(path)
         policies_list = policies.get("policies", [])
         policy_found = False
 
@@ -118,6 +119,7 @@ class PolicyRegistry:
     ) -> bool:
         """Delete a specific policy by name."""
 
+        path = cls._prepare_path(path)
         policies = cls.get_policies(path)
         policies_list = policies.get("policies", [])
         initial_count = len(policies_list)
@@ -166,7 +168,7 @@ class PolicyRegistry:
         return path
 
     @classmethod
-    def _get_policies(
+    def get_policies(
         cls, path: Optional[Path] = None
     ) -> Dict[str, List[Dict[str, Any]]]:
         """Return all policies from the registry."""
@@ -176,7 +178,7 @@ class PolicyRegistry:
 
         if not path.exists():
             logger.debug(
-                f"Resources file not found at {path}, returning empty policies"
+                f"Policies file not found at {path}, returning empty policies"
             )
             return policies
 
@@ -186,5 +188,23 @@ class PolicyRegistry:
                 return json.loads(policies) 
 
         except Exception as e:
-            logger.error(f"Error accessing resource location {path}: {e}")
+            logger.error(f"Error accessing policy location {path}: {e}")
+            raise
+
+    @classmethod
+    def get_policies_metadata(cls):
+        """
+        Return instructions of all policies from the registry. Only supports soft policies for now.
+        """
+
+        path = cls._prepare_path(path)
+
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                policies = f.read().strip()
+                policies = json.loads(policies) 
+                policy_metadata = policies.get("Instructions", [])
+                return policy_metadata
+        except Exception as e:
+            logger.error(f"Error accessing policy location {path}: {e}")
             raise

@@ -8,6 +8,7 @@ from .models.model_session import ModelSession
 from .models.model_registry import ProviderRegistry
 from .tools.tool_registry import ToolRegistry
 from .resources.resource_registry import ResourceRegistry
+from .policies.policy_registry import PolicyRegistry
 from .contextmanager import ContextManager
 from .models.OpenAI_client import OpenAIClient
 from .models.Anthropic_client import AnthropicClient
@@ -50,8 +51,10 @@ class PAI:
         except ImportError:
             logger.warning("Failed to import stores")
             pass
+
         tool_list = ToolRegistry.get_tools()
         resource_metadata = ResourceRegistry.get_resource_metadata()
+        policies_metadata = PolicyRegistry.get_policies_metadata()
 
         self.session_log = {
             "session_name": session_name,
@@ -63,6 +66,7 @@ class PAI:
                     "api_key": api_key,
                     "tool_metadata": tool_list,
                     "resource_metadata": resource_metadata,
+                    "policies_metadata": policies_metadata,
                     "prompt_history": [],
                 }  
             ],
@@ -81,6 +85,8 @@ class PAI:
 
         tool_list = ToolRegistry.get_tools()
         resource_metadata = ResourceRegistry.get_resource_metadata()
+        policies_metadata = PolicyRegistry.get_policies_metadata()  
+
         new_instance = {
             "session_start_dt": datetime.utcnow().isoformat() + "Z",
             "provider": provider if provider is not None else prev.get("provider"),
@@ -88,6 +94,7 @@ class PAI:
             "api_key": api_key if api_key is not None else prev.get("api_key"),
             "tool_metadata": tool_list,
             "resource_metadata": resource_metadata,
+            "policies_metadata": policies_metadata,  
             "prompt_history": [],
         }
 
@@ -98,7 +105,6 @@ class PAI:
 
         self.recreate_session()
         self.save_session()
-           
 
     def save_session(self):
         """Save current session to file if empty overwrite, if populated append."""
