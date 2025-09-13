@@ -11,6 +11,7 @@ from .resources.resource_registry import ResourceRegistry
 from .contextmanager import ContextManager
 from .models.OpenAI_client import OpenAIClient
 from .models.Anthropic_client import AnthropicClient
+from .models.Huggingface_client import HuggingfaceClient
 
 
 # Add more imports as you create providers:
@@ -200,6 +201,10 @@ class PAI:
     def use_anthropic(self, **kwargs) -> "PAI":
         """Initialize Anthropic provider - passes all arguments directly to AnthropicClient"""
         return self.use_provider("anthropic", **kwargs)
+
+    def use_huggingface(self, **kwargs) -> "PAI":
+        """Initialize Huggingface provider - passes all arguments directly to HuggingfaceClient"""
+        return self.use_provider("huggingface", **kwargs)
 
     def generate(self, prompt: str, **kwargs) -> str:
         """
