@@ -12,6 +12,7 @@ from .contextmanager import ContextManager
 from .models.OpenAI_client import OpenAIClient
 from .models.Anthropic_client import AnthropicClient
 from .models.Huggingface_client import HuggingfaceClient
+from .models.Gemini_client import GeminiClient
 
 
 # Add more imports as you create providers:
@@ -201,6 +202,10 @@ class PAI:
     def use_huggingface(self, **kwargs) -> "PAI":
         """Initialize Huggingface provider - passes all arguments directly to HuggingfaceClient"""
         return self.use_provider("huggingface", **kwargs)
+
+    def use_gemini(self, **kwargs) -> "PAI":
+        """Initialize Gemini provider - passes all arguments directly to HuggingfaceClient"""
+        return self.use_provider("gemini", **kwargs)
 
     def generate(self, prompt: str, **kwargs) -> str:
         """
