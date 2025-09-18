@@ -12,11 +12,11 @@ class HuggingfaceClient:
     def __init__(
         self,
         api_key: str = None,
-        model: str = "meta-llama/Llama-3.1-8B-Instruct",
+        model: str = None,
         **kwargs
     ):
         self.api_key = api_key or os.getenv("HUGGINGFACE_INFERENCE_TOKEN")
-        self.model = model
+        self.model = model or "meta-llama/Llama-3.1-8B-Instruct"
         self.client = InferenceClient(api_key=self.api_key)
 
     def generate(self, prompt: str, **kwargs):

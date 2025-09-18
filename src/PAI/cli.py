@@ -200,7 +200,7 @@ def providers(
     typer.echo("Available Providers:")
     for provider in providers:
         typer.echo(f"   - {provider}")
-    typer.echo("\nUse 'PAI init <provider> --model <model>' to initialize a session")
+    typer.echo("\nUse 'PAI init <session name> <provider> --model <model>' to initialize a session")
 
 
 if __name__ == "__main__":
