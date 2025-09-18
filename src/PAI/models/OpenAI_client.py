@@ -8,15 +8,18 @@ from PAI.utils.logger import logger
 
 @ProviderRegistry.register("openai")
 class OpenAIClient:
-    def __init__(self, api_key: str = None, model: str = "gpt-3.5-turbo", **kwargs):
+    def __init__(self, api_key: str = None, model: str = None, **kwargs):
         self.api_key = api_key or os.getenv("OPENAI_API_KEY")
-        self.model = model
+        self.model = model or "gpt-3.5-turbo"
         self.client = OpenAI(api_key=self.api_key)
 
     def generate(self, prompt: str, **kwargs):
         if not prompt.strip():
             logger.error("Prompt cannot be empty")
             raise ValueError("Prompt cannot be empty")
+  
+        logger.debug(f"Model:{self.model}")
+        logger.debug(f"api key:{self.api_key}")
 
         params = {
             "model": self.model,

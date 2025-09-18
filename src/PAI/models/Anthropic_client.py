@@ -9,10 +9,10 @@ from PAI.utils.logger import logger
 @ProviderRegistry.register("anthropic")
 class AnthropicClient:
     def __init__(
-        self, api_key: str = None, model: str = "claude-3-haiku-20240307", **kwargs
+        self, api_key: str = None, model: str = None, **kwargs
     ):
         self.api_key = api_key or os.getenv("ANTHROPIC_API_KEY")
-        self.model = model
+        self.model = model or "claude-3-haiku-20240307"
         self.client = anthropic.Anthropic(api_key=self.api_key)
 
     def generate(self, prompt: str, **kwargs):

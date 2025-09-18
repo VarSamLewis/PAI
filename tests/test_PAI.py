@@ -33,8 +33,14 @@ def test_PAI_init_2():
 def test_PAI_use_provider_1(mocker):
     """Test use_provider method with mocker"""
     pai = PAI("Test_Session")
+    mock_provider = mocker.MagicMock()
+    mock_provider.model = "test-model"
+
     mock_init = mocker.patch.object(pai.model_session, "init")
+    pai.model_session.provider = mock_provider
+    
     result = pai.use_provider("test-provider", model="test-model", param="value")
+    
     mock_init.assert_called_once_with(
         "test-provider", model="test-model", param="value"
     )
@@ -46,8 +52,14 @@ def test_PAI_use_provider_1(mocker):
 def test_PAI_use_openai_1(mocker):
     """Test use_openai method"""
     pai = PAI("Test_Session")
+    mock_provider = mocker.MagicMock()
+    mock_provider.model = "gpt-4"
+
     mock_init = mocker.patch.object(pai.model_session, "init")
+    pai.model_session.provider = mock_provider
+    
     result = pai.use_openai(model="gpt-4", api_key="test-key")
+    
     mock_init.assert_called_once_with("openai", model="gpt-4", api_key="test-key")
     assert pai.current_provider == "openai"
     assert pai.current_model == "gpt-4"

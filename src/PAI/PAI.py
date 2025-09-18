@@ -48,8 +48,11 @@ class PAI:
         except ImportError:
             logger.warning("Failed to import stores")
             pass
+
         tool_list = ToolRegistry.get_tools()
         resource_metadata = ResourceRegistry.get_resource_metadata()
+
+        self.use_provider(provider, model=model, api_key=api_key)
 
         self.session_log = {
             "session_name": session_name,
@@ -57,7 +60,7 @@ class PAI:
                 {
                     "session_start_dt": datetime.utcnow().isoformat() + "Z",
                     "provider": provider,
-                    "model": model,
+                    "model": self.current_model,
                     "api_key": api_key,
                     "tool_metadata": tool_list,
                     "resource_metadata": resource_metadata,
@@ -66,7 +69,7 @@ class PAI:
             ],
         }
 
-        logger.debug("")
+        logger.debug(f"Session Log: {self.session_log}")
 
         self.save_session()
 
@@ -183,7 +186,7 @@ class PAI:
         """
         self.model_session.init(provider, **kwargs)
         self.current_provider = provider
-        self.current_model = kwargs.get("model")
+        self.current_model = getattr(self.model_session.provider, 'model', None)
         logger.info(f"Using provider: {provider} with model: {self.current_model}")
         return self
 
