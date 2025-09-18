@@ -5,24 +5,26 @@ from datetime import datetime
 
 from PAI.utils.logger import logger
 
+
 class PolicyRegistry:
 
     @classmethod
     def create_policy(
-            cls,
-            Name: str,
-            Description: str,
-            Policy_Type: str,
-            Regex: Optional[str] = None,
-            Instructions: Optional[str] = None,
-            Ruleset_Name: Optional[List[Dict[str, Any]]] = None,
-            Ruleset_ID: Optional[List[int]] = None,
-            path: Optional[Path] = None,
-
-        ) -> Optional[Dict[str, Any]]:
+        cls,
+        Name: str,
+        Description: str,
+        Policy_Type: str,
+        Regex: Optional[str] = None,
+        Instructions: Optional[str] = None,
+        Ruleset_Name: Optional[List[Dict[str, Any]]] = None,
+        Ruleset_ID: Optional[List[int]] = None,
+        path: Optional[Path] = None,
+    ) -> Optional[Dict[str, Any]]:
 
         if Policy_Type.lower() not in ["hard", "soft"]:
-            raise ValueError("Policy_Type must be either 'hard' or 'soft', case nonsensitive.")
+            raise ValueError(
+                "Policy_Type must be either 'hard' or 'soft', case nonsensitive."
+            )
         if Policy_Type.lower() == "hard" and not Regex:
             raise ValueError("Regex must be provided for 'hard' policies.")
         if Policy_Type.lower() == "soft" and not Instructions:
@@ -36,10 +38,10 @@ class PolicyRegistry:
                 "Description": Description,
                 "Policy_Type": Policy_Type,
                 "Regex": Regex if Regex is not None else None,
-                "Instructions": Instructions if Instructions is not None else None, 
-                "Ruleset_Name": Ruleset_Name if Ruleset_Name is not None else None,  
+                "Instructions": Instructions if Instructions is not None else None,
+                "Ruleset_Name": Ruleset_Name if Ruleset_Name is not None else None,
                 "Ruleset_ID": Ruleset_Name if Ruleset_Name is not None else None,
-                "LastModified": datetime
+                "LastModified": datetime,
             }
 
             policies = cls._get_policies(path)
@@ -53,7 +55,7 @@ class PolicyRegistry:
                 json.dump(policies, f, indent=2)
 
             logger.info(f"Resource '{Name}' (ID: {policies}) added successfully")
-            return policy_entry 
+            return policy_entry
 
         except Exception as e:
             logger.error(f"Error creating policy '{Name}': {e}")
@@ -69,7 +71,7 @@ class PolicyRegistry:
         Ruleset_Name: Optional[List[Dict[str, Any]]] = None,
         Ruleset_ID: Optional[List[int]] = None,
         path: Optional[Path] = None,
-        ):
+    ):
 
         policies = cls._get_policies(path)
         policies_list = policies.get("policies", [])
@@ -89,7 +91,6 @@ class PolicyRegistry:
                             "Ruleset_Name": Ruleset_Name,
                             "Ruleset_ID": Ruleset_ID,
                             "LastModified": datetime,
-            
                         }
                     )
 
@@ -113,9 +114,7 @@ class PolicyRegistry:
             raise
 
     @classmethod
-    def delete_policy(
-        cls, Name: str, path: Optional[Path] = None
-    ) -> bool:
+    def delete_policy(cls, Name: str, path: Optional[Path] = None) -> bool:
         """Delete a specific policy by name."""
 
         policies = cls.get_policies(path)
@@ -183,7 +182,7 @@ class PolicyRegistry:
         try:
             with open(path, "r", encoding="utf-8") as f:
                 policies = f.read().strip()
-                return json.loads(policies) 
+                return json.loads(policies)
 
         except Exception as e:
             logger.error(f"Error accessing resource location {path}: {e}")

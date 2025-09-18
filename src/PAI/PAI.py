@@ -31,15 +31,12 @@ class PAI:
         self.model_session = ModelSession()
         self.current_provider = None
         self.current_model = None
-        self.tool_enabled = (
-            True  
-        )
+        self.tool_enabled = True
         self.resource_enabled = True
         self.session_file = (
             Path.home() / f".PAI/PAI_session_logs/PAI_session_log_{session_name}.json"
         )
         self.context = ContextManager()
-
 
     def init_session(self, session_name, provider, model, api_key=None):
         """Initialise session"""
@@ -57,7 +54,7 @@ class PAI:
         self.session_log = {
             "session_name": session_name,
             "session_instance": [
-                {  
+                {
                     "session_start_dt": datetime.utcnow().isoformat() + "Z",
                     "provider": provider,
                     "model": model,
@@ -65,7 +62,7 @@ class PAI:
                     "tool_metadata": tool_list,
                     "resource_metadata": resource_metadata,
                     "prompt_history": [],
-                }  
+                }
             ],
         }
 
@@ -73,8 +70,9 @@ class PAI:
 
         self.save_session()
 
-
-    def load_session(self, session_name, provider: str = None, model: str = None, api_key=None):
+    def load_session(
+        self, session_name, provider: str = None, model: str = None, api_key=None
+    ):
         """ """
         self.get_session_log()
         prev = self.session_log["session_instance"][-1]
@@ -99,7 +97,6 @@ class PAI:
 
         self.recreate_session()
         self.save_session()
-           
 
     def save_session(self):
         """Save current session to file if empty overwrite, if populated append."""
@@ -131,7 +128,6 @@ class PAI:
             json.dump(existing_data, f, indent=2)
         logger.info(f"Session instance appended to: {self.session_file}")
 
-
     def get_session_log(self):
         """Load existing session from file and normalize self.session_log."""
         with open(self.session_file, "r") as f:
@@ -150,7 +146,6 @@ class PAI:
             "session_instance": [latest],
         }
         return self.session_log
-    
 
     def recreate_session(self):
         """Recreate session from the latest session instance."""
@@ -160,7 +155,6 @@ class PAI:
             model=latest["model"],
             api_key=latest.get("api_key"),
         )
-
 
     def add_prompt(self, prompt, response, tool_used, resource_used):
         latest = self.session_log["session_instance"][-1]
@@ -175,7 +169,6 @@ class PAI:
         )
         self.save_session()
         logger.info("Prompt and response added to session log")
-
 
     def use_provider(self, provider: str, **kwargs) -> "PAI":
         """
@@ -226,7 +219,9 @@ class PAI:
             )
 
         if self.tool_enabled:
-            prompt = prompt + "\n" + self.context.create_prompt_context(self.session_log)
+            prompt = (
+                prompt + "\n" + self.context.create_prompt_context(self.session_log)
+            )
             logger.debug(f"Prompt with context: {prompt}")
 
         return self.model_session.generate(prompt, **kwargs)
@@ -265,7 +260,6 @@ class PAI:
 
         return results
 
-    
     def generate_loop(
         self,
         prompt: str,
@@ -301,10 +295,11 @@ class PAI:
             resource_calls = self._extract_resouce_call(response)
 
             if not tool_calls and not resource_calls:
-                logger.info(f"Iteration {step + 1}: no tool/resource requests; finishing.")
+                logger.info(
+                    f"Iteration {step + 1}: no tool/resource requests; finishing."
+                )
                 return response, tools_used, resources_used
 
-    
             tool_results: List[Dict[str, Any]] = []
             resource_results: List[Dict[str, Any]] = []
 
@@ -315,7 +310,6 @@ class PAI:
             if self.resource_enabled and resource_calls:
                 resource_results = self.call_resources(resource_calls)
                 resources_used.extend(resource_calls)
-
 
             current_prompt = self.context.build_next_prompt(
                 original_prompt=original_prompt,
@@ -340,7 +334,6 @@ class PAI:
 
         self.add_prompt(current_prompt, final_response, tools_used, resources_used)
         return final_response, tools_used, resources_used
-
 
     def evaluate_response(self, original_prompt: str, response: str, **kwargs) -> str:
         """

@@ -42,8 +42,10 @@ def init(
         typer.echo(f"Failed to initialize session: {e}", err=True)
         raise typer.Exit(1)
 
+
 @app.command()
-def load(session_name: str = typer.Argument("default", help="Session name"),
+def load(
+    session_name: str = typer.Argument("default", help="Session name"),
     provider: str = typer.Argument(..., help="AI provider (openai, anthropic, etc.)"),
     model: str = typer.Option(None, "--model", "-m", help="Model to use"),
     api_key: Optional[str] = typer.Option(None, "--api-key", help="API key"),
@@ -69,12 +71,15 @@ def load(session_name: str = typer.Argument("default", help="Session name"),
         typer.echo(f"Failed to load session: {e}", err=True)
         raise typer.Exit(1)
 
+
 @app.command()
 def prompt(
     session_name: str = typer.Argument("default", help="Session name"),
     text: str = typer.Argument(..., help="The prompt to send to the AI"),
-    iterations: int = typer.Option(2, "--iterations", "-n", help="Number of iterations for the prompt"),
-        params: List[str] = typer.Option(
+    iterations: int = typer.Option(
+        2, "--iterations", "-n", help="Number of iterations for the prompt"
+    ),
+    params: List[str] = typer.Option(
         [],
         "--param",
         "-p",
@@ -121,7 +126,7 @@ def prompt(
 
         final_response, tool_use, resource_use = ai.generate_loop(
             text, iterations=iterations, **kwargs
-            )
+        )
 
         typer.echo(f"{final_response}")
     except Exception as e:
