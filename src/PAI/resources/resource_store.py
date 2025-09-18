@@ -19,4 +19,3 @@ ResourceRegistry.create_resource(
     local_file=False,
     Filetype=None,
 )
-

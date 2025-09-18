@@ -42,11 +42,15 @@ class ResourceRegistry:
 
             # Normalize deprecated 'content' param to 'Content'
             if Content is None and content is not None:
-                logger.warning("Parameter 'content' is deprecated. Use 'Content' instead.")
+                logger.warning(
+                    "Parameter 'content' is deprecated. Use 'Content' instead."
+                )
                 Content = content
 
             if ContentType:
-                Content = cls._handle_Content_type(Content or "", ContentType, local_file)
+                Content = cls._handle_Content_type(
+                    Content or "", ContentType, local_file
+                )
 
             resource_id = str(uuid.uuid4())
             size = cls._get_resource_size(Content or "")
